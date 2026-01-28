@@ -5,7 +5,7 @@
  * encrypted/decrypted, matching the Rust implementation exactly.
  */
 
-// Mask for the right-most Payload bits section (bits 0-51, 52 bits)
+// Mask for the right-most Payload bits section (bits 0-59, 60 bits)
 export const RIGHT_SECRET_DATA_SECTION_MASK = 0x00000000_0000_0000_0fff_ffffffffffffn;
 
 // Mask for the middle Payload bits section (bits 64-75, 12 bits)

@@ -10,7 +10,7 @@ This monorepo contains the reference TypeScript packages for working with TNIDs.
 | Package                                   | Description                                                    |
 | ----------------------------------------- | -------------------------------------------------------------- |
 | [@tnid/core](./packages/core)             | Core TNID functionality - generation, parsing, UUID conversion |
-| [@tnid/encryption](./packages/encryption) | Format-preserving encryption for TNIDs                         |
+| [@tnid/encryption](./packages/encryption) | Encrypt V0 TNIDs to hide timestamp information                 |
 
 ## Installation
 

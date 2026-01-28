@@ -1,6 +1,6 @@
 # @tnid/encryption
 
-Format-preserving encryption for TNIDs - hide timestamp information by encrypting V0 TNIDs to V1.
+Encrypt V0 TNIDs to V1 to hide timestamp information.
 
 ## Why Encrypt TNIDs?
 
@@ -62,13 +62,7 @@ const decrypted = await decryptV1ToV0(v1, key);
 
 ## How It Works
 
-The encryption uses Format-Preserving Encryption (FPE) with AES-128 in FF1 mode (NIST SP 800-38G). This encrypts the 100 Payload bits while preserving:
-
-- The TNID name (unchanged)
-- The UUID version/variant bits (valid UUIDv8)
-- The overall 128-bit structure
-
-The TNID variant changes from V0 to V1, making the encrypted ID indistinguishable from a randomly generated V1 TNID.
+The encryption converts the 100 payload bits while preserving the TNID structure. The result is a valid V1 TNID that is indistinguishable from a randomly generated one.
 
 ## API Reference
 
@@ -94,26 +88,27 @@ const bytes: Uint8Array = key.asBytes();
 Encrypts a V0 TNID to V1, hiding timestamp information.
 
 ```typescript
-const v1 = await encryptV0ToV1("user.Br2flcNDfF6LYICnT", key);
+const v0: UserId = UserId.new_v0();
+const v1: UserId = await encryptV0ToV1(v0, key); // Type preserved!
 ```
 
-- **Input**: V0 TNID string
-- **Output**: V1 TNID string (same name, encrypted payload)
+- **Input**: V0 TNID (any typed TNID or `DynamicTnid`)
+- **Output**: V1 TNID (same type as input)
 - **Idempotent**: If input is already V1, returns it unchanged
-- **Throws**: `EncryptionError` if input is invalid or unsupported variant
+- **Throws**: `EncryptionError` if variant is unsupported (v2/v3)
 
 ### `decryptV1ToV0(tnid, key)`
 
 Decrypts a V1 TNID back to V0, recovering timestamp information.
 
 ```typescript
-const v0 = await decryptV1ToV0("user.X3Wxwp0wOy4OZp_rP", key);
+const decrypted: UserId = await decryptV1ToV0(v1, key); // Type preserved!
 ```
 
-- **Input**: V1 TNID string (encrypted)
-- **Output**: V0 TNID string (original with timestamp)
+- **Input**: V1 TNID (any typed TNID or `DynamicTnid`)
+- **Output**: V0 TNID (same type as input)
 - **Idempotent**: If input is already V0, returns it unchanged
-- **Throws**: `EncryptionError` if input is invalid or unsupported variant
+- **Throws**: `EncryptionError` if variant is unsupported (v2/v3)
 
 ### Error Classes
 
@@ -128,16 +123,11 @@ try {
     console.log("Invalid key:", e.message);
   }
 }
-
-// EncryptionError - encryption/decryption failed
-try {
-  await encryptV0ToV1("invalid-tnid", key);
-} catch (e) {
-  if (e instanceof EncryptionError) {
-    console.log("Encryption failed:", e.message);
-  }
-}
 ```
+
+## Implementation Details
+
+Uses FF1 format-preserving encryption (NIST SP 800-38G) with AES-128, which allows encrypting the 100 payload bits while maintaining the exact same bit length. This implementation is bit-compatible with the Rust TNID library.
 
 ## Note
 

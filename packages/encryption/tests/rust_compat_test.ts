@@ -6,7 +6,7 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { Tnid } from "@tnid/core";
+import { DynamicTnid, Tnid } from "@tnid/core";
 import { EncryptionKey, encryptV0ToV1, decryptV1ToV0 } from "../src/index.ts";
 import * as path from "@std/path";
 
@@ -89,7 +89,7 @@ Deno.test("rust compat: decrypt V1 matches Rust CLI", async () => {
     const v1 = await cliEncrypt(v0, keyHex);
 
     // Decrypt with both implementations
-    const tsDecrypted = await decryptV1ToV0(v1, key);
+    const tsDecrypted = await decryptV1ToV0(DynamicTnid.parse(v1), key);
     const rustDecrypted = await cliDecrypt(v1, keyHex);
 
     assertEquals(

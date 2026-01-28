@@ -98,20 +98,18 @@ export class EncryptionKey {
 }
 
 /**
- * Convert TNID string to 128-bit value.
+ * Convert TNID to 128-bit value.
  */
-function tnidToValue(tnid: string): bigint {
-  // Use @tnid/core to convert to UUID, then parse UUID to value
-  const parsed = DynamicTnid.parse(tnid);
-  const uuid = DynamicTnid.toUuidString(parsed);
+function tnidToValue(tnid: DynamicTnid): bigint {
+  const uuid = DynamicTnid.toUuidString(tnid);
   return parseUuidStringToValue(uuid);
 }
 
 /**
- * Convert 128-bit value back to TNID string.
+ * Convert 128-bit value back to TNID.
  */
-function valueToTnid(value: bigint): string {
-  return valueToTnidString(value);
+function valueToTnid(value: bigint): DynamicTnid {
+  return valueToTnidString(value) as DynamicTnid;
 }
 
 /**
@@ -159,18 +157,13 @@ async function decryptPayload(payload: bigint, key: EncryptionKey): Promise<bigi
 /**
  * Encrypts a V0 TNID to V1, hiding timestamp information.
  *
- * @param tnid The V0 TNID string to encrypt
+ * @param tnid The V0 TNID to encrypt
  * @param key The encryption key
- * @returns The encrypted V1 TNID string
+ * @returns The encrypted V1 TNID (same type as input)
  * @throws EncryptionError if the TNID is not V0 or is invalid
  */
-export async function encryptV0ToV1(tnid: string, key: EncryptionKey): Promise<string> {
-  let value: bigint;
-  try {
-    value = tnidToValue(tnid);
-  } catch (e) {
-    throw new EncryptionError(`Invalid TNID: ${(e as Error).message}`);
-  }
+export async function encryptV0ToV1<T extends DynamicTnid>(tnid: T, key: EncryptionKey): Promise<T> {
+  const value = tnidToValue(tnid);
 
   const variant = extractVariantFromValue(value);
   if (variant === "v1") {
@@ -198,24 +191,19 @@ export async function encryptV0ToV1(tnid: string, key: EncryptionKey): Promise<s
   // Change variant from V0 to V1
   result = setVariant(result, "v1");
 
-  return valueToTnid(result);
+  return valueToTnid(result) as T;
 }
 
 /**
  * Decrypts a V1 TNID back to V0, recovering timestamp information.
  *
- * @param tnid The V1 TNID string to decrypt
+ * @param tnid The V1 TNID to decrypt
  * @param key The encryption key (must match the one used for encryption)
- * @returns The decrypted V0 TNID string
+ * @returns The decrypted V0 TNID (same type as input)
  * @throws EncryptionError if the TNID is not V1 or is invalid
  */
-export async function decryptV1ToV0(tnid: string, key: EncryptionKey): Promise<string> {
-  let value: bigint;
-  try {
-    value = tnidToValue(tnid);
-  } catch (e) {
-    throw new EncryptionError(`Invalid TNID: ${(e as Error).message}`);
-  }
+export async function decryptV1ToV0<T extends DynamicTnid>(tnid: T, key: EncryptionKey): Promise<T> {
+  const value = tnidToValue(tnid);
 
   const variant = extractVariantFromValue(value);
   if (variant === "v0") {
@@ -243,5 +231,5 @@ export async function decryptV1ToV0(tnid: string, key: EncryptionKey): Promise<s
   // Change variant from V1 to V0
   result = setVariant(result, "v0");
 
-  return valueToTnid(result);
+  return valueToTnid(result) as T;
 }

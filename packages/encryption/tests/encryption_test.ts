@@ -2,10 +2,10 @@
  * Tests for TNID encryption/decryption.
  */
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
+import { DynamicTnid } from "@tnid/core";
 import {
   decryptV1ToV0,
-  EncryptionError,
   EncryptionKey,
   EncryptionKeyError,
   encryptV0ToV1,
@@ -66,7 +66,7 @@ Deno.test("EncryptionKey: fromHex rejects invalid hex", () => {
 
 Deno.test("encryption: V0 round-trip works", async () => {
   const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
-  const v0 = "user.--Zmk4cF---------";
+  const v0 = DynamicTnid.parse("user.--Zmk4cF---------");
 
   const encrypted = await encryptV0ToV1(v0, key);
   // Encrypted should be different from original
@@ -82,7 +82,7 @@ Deno.test("encryption: V0 round-trip works", async () => {
 Deno.test("encryption: different keys produce different results", async () => {
   const key1 = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
   const key2 = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f11");
-  const v0 = "user.--Zmk4cF---------";
+  const v0 = DynamicTnid.parse("user.--Zmk4cF---------");
 
   const e1 = await encryptV0ToV1(v0, key1);
   const e2 = await encryptV0ToV1(v0, key2);
@@ -92,7 +92,7 @@ Deno.test("encryption: different keys produce different results", async () => {
 
 Deno.test("encryption: encrypting V1 returns it unchanged", async () => {
   const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
-  const v0 = "user.--Zmk4cF---------";
+  const v0 = DynamicTnid.parse("user.--Zmk4cF---------");
 
   const v1 = await encryptV0ToV1(v0, key);
   const v1Again = await encryptV0ToV1(v1, key);
@@ -102,7 +102,7 @@ Deno.test("encryption: encrypting V1 returns it unchanged", async () => {
 
 Deno.test("encryption: decrypting V0 returns it unchanged", async () => {
   const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
-  const v0 = "user.--Zmk4cF---------";
+  const v0 = DynamicTnid.parse("user.--Zmk4cF---------");
 
   const v0Again = await decryptV1ToV0(v0, key);
   assertEquals(v0, v0Again, "Decrypting V0 should return unchanged");
@@ -120,7 +120,7 @@ Deno.test("encryption: matches Rust - vector 1", async () => {
   // Key: 0102030405060708090a0b0c0d0e0f10
   // Rust encrypted: user.S1PcM9daFtzp1lJM5
   const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
-  const v0 = "user.--Zmk4cF---------";
+  const v0 = DynamicTnid.parse("user.--Zmk4cF---------");
   const expectedEncrypted = "user.S1PcM9daFtzp1lJM5";
 
   const encrypted = await encryptV0ToV1(v0, key);
@@ -135,7 +135,7 @@ Deno.test("encryption: matches Rust - vector 2", async () => {
   // Key: 2b7e151628aed2a6abf7158809cf4f3c (NIST test key)
   // Rust encrypted: post.X3Wxwp0wOy4OZp_rP
   const key = EncryptionKey.fromHex("2b7e151628aed2a6abf7158809cf4f3c");
-  const v0 = "post.7kbDJzwxJeNnf6kfH";
+  const v0 = DynamicTnid.parse("post.7kbDJzwxJeNnf6kfH");
   const expectedEncrypted = "post.X3Wxwp0wOy4OZp_rP";
 
   const encrypted = await encryptV0ToV1(v0, key);
@@ -150,7 +150,7 @@ Deno.test("encryption: matches Rust - vector 3", async () => {
   // Key: 00000000000000000000000000000000 (all zeros)
   // Rust encrypted: a.qjrH3l_XfqYmAVUgO
   const key = EncryptionKey.fromHex("00000000000000000000000000000000");
-  const v0 = "a.-----------------";
+  const v0 = DynamicTnid.parse("a.-----------------");
   const expectedEncrypted = "a.qjrH3l_XfqYmAVUgO";
 
   const encrypted = await encryptV0ToV1(v0, key);
@@ -164,13 +164,11 @@ Deno.test("encryption: matches Rust - vector 3", async () => {
 // Error Cases
 // ============================================================================
 
-Deno.test("encryption: rejects invalid TNID format", async () => {
-  const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
-
-  await assertRejects(
-    () => encryptV0ToV1("invalid", key),
-    EncryptionError,
-    undefined,
-    "Should reject TNID without separator",
+Deno.test("encryption: DynamicTnid.parse rejects invalid TNID format", () => {
+  // With strong typing, invalid strings are caught at parse time
+  assertThrows(
+    () => DynamicTnid.parse("invalid"),
+    Error,
+    "missing '.' separator",
   );
 });

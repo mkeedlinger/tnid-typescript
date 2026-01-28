@@ -284,7 +284,7 @@ await db.query("INSERT INTO users (id) VALUES ($1)", [uuid]);
 
 ## Related Packages
 
-- **@tnid/encryption** - Format-preserving encryption to convert V0 (time-ordered) to V1 (random-looking) IDs
+- **@tnid/encryption** - Encrypt V0 TNIDs to V1 to hide timestamp information
 
 ## License
 
