@@ -31,6 +31,3 @@ export {
   encryptV0ToV1,
   decryptV1ToV0,
 } from "./encryption.ts";
-
-// Re-export FF1 for advanced use cases
-export { FF1 } from "./ff1.ts";

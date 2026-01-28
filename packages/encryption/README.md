@@ -1,8 +1,16 @@
 # @tnid/encryption
 
-Format-preserving encryption for TNIDs - convert time-ordered V0 IDs to random-looking V1 IDs and back.
+Format-preserving encryption for TNIDs - hide timestamp information by encrypting V0 TNIDs to V1.
 
-This package provides FF1 (NIST SP 800-38G) format-preserving encryption to hide the timestamp information in V0 TNIDs while maintaining reversibility. Encrypted IDs are indistinguishable from random V1 IDs.
+## Why Encrypt TNIDs?
+
+V0 TNIDs contain a timestamp (like UUIDv7), which reveals when the ID was created. This can leak information you may not want to expose publicly, such as:
+
+- When a user account was created
+- The order in which records were created
+- Approximate creation rates
+
+By encrypting V0 to V1, you get a valid high-entropy V1 TNID that hides this information while remaining decryptable on the backend.
 
 ## Installation
 
@@ -35,67 +43,47 @@ Requires `globalThis.crypto` (Web Crypto API):
 import { Tnid, TnidType } from "@tnid/core";
 import { EncryptionKey, encryptV0ToV1, decryptV1ToV0 } from "@tnid/encryption";
 
-// Create a TNID factory
 const UserId = Tnid("user");
 type UserId = TnidType<typeof UserId>;
 
 // Create an encryption key (16 bytes / 128 bits)
 const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
 
-// Generate a time-ordered V0 ID
-const v0Id = UserId.new_v0();
-console.log(v0Id); // "user.Br2flcNDfF6LYICnT" (contains timestamp)
+// Create a time-ordered V0 ID
+const v0 = UserId.new_v0();
 
-// Encrypt to V1 (hides timestamp, looks random)
-const v1Id = await encryptV0ToV1(v0Id, key);
-console.log(v1Id); // "user.X3Wxwp0wOy4OZp_rP" (random-looking)
+// Encrypt to V1 before sending to client
+const v1 = await encryptV0ToV1(v0, key);
 
-// Decrypt back to V0 (recovers timestamp)
-const decrypted = await decryptV1ToV0(v1Id, key);
-console.log(decrypted === v0Id); // true
+// Decrypt on the backend to recover the original
+const decrypted = await decryptV1ToV0(v1, key);
+// decrypted === v0
 ```
 
-## Use Cases
+## How It Works
 
-### Hide Creation Time from Users
+The encryption uses Format-Preserving Encryption (FPE) with AES-128 in FF1 mode (NIST SP 800-38G). This encrypts the 100 Payload bits while preserving:
 
-Expose random-looking IDs externally while keeping time-ordered IDs internally:
+- The TNID name (unchanged)
+- The UUID version/variant bits (valid UUIDv8)
+- The overall 128-bit structure
 
-```typescript
-// Internal: time-ordered for efficient database queries
-const internalId = UserId.new_v0();
-
-// External: encrypted ID hides when the user was created
-const externalId = await encryptV0ToV1(internalId, key);
-
-// API returns encrypted ID
-res.json({ id: externalId, name: user.name });
-
-// When receiving ID from client, decrypt for internal use
-const receivedId = await decryptV1ToV0(req.params.id, key);
-```
-
-### Prevent ID Enumeration
-
-V0 IDs are sequential and predictable. Encryption prevents attackers from guessing valid IDs:
-
-```typescript
-// Without encryption: user.Br2flcN... -> user.Br2flcO... (predictable)
-// With encryption: user.X3Wxwp0... -> user.qjrH3l_... (unpredictable)
-```
+The TNID variant changes from V0 to V1, making the encrypted ID indistinguishable from a randomly generated V1 TNID.
 
 ## API Reference
 
 ### `EncryptionKey`
 
-A 128-bit (16 byte) encryption key for TNID encryption.
+A 128-bit (16 byte) encryption key.
 
 ```typescript
 // From 32-character hex string
 const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
 
 // From raw bytes
-const key = EncryptionKey.fromBytes(new Uint8Array(16));
+const key = EncryptionKey.fromBytes(
+  new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+);
 
 // Get key bytes (returns a copy)
 const bytes: Uint8Array = key.asBytes();
@@ -107,7 +95,6 @@ Encrypts a V0 TNID to V1, hiding timestamp information.
 
 ```typescript
 const v1 = await encryptV0ToV1("user.Br2flcNDfF6LYICnT", key);
-// Returns: "user.X3Wxwp0wOy4OZp_rP"
 ```
 
 - **Input**: V0 TNID string
@@ -121,7 +108,6 @@ Decrypts a V1 TNID back to V0, recovering timestamp information.
 
 ```typescript
 const v0 = await decryptV1ToV0("user.X3Wxwp0wOy4OZp_rP", key);
-// Returns: "user.Br2flcNDfF6LYICnT"
 ```
 
 - **Input**: V1 TNID string (encrypted)
@@ -153,35 +139,9 @@ try {
 }
 ```
 
-## Security Notes
+## Note
 
-- Uses AES-128 with FF1 mode (NIST SP 800-38G)
-- 10 Feistel rounds for cryptographic security
-- Format-preserving: output has same structure as input
-- Key must be kept secret - same key encrypts and decrypts
-- Compatible with Rust TNID implementation (bit-for-bit identical output)
-
-## Key Management
-
-Generate a secure random key:
-
-```typescript
-// Generate 16 random bytes
-const keyBytes = new Uint8Array(16);
-crypto.getRandomValues(keyBytes);
-const key = EncryptionKey.fromBytes(keyBytes);
-
-// Convert to hex for storage
-const hex = Array.from(key.asBytes())
-  .map((b) => b.toString(16).padStart(2, "0"))
-  .join("");
-```
-
-Store the key securely (environment variable, secrets manager, etc.):
-
-```typescript
-const key = EncryptionKey.fromHex(process.env.TNID_ENCRYPTION_KEY!);
-```
+The encryption functionality is not part of the TNID specification. Encrypted TNIDs are standard V1 TNIDs and remain fully compatible with any TNID implementation.
 
 ## License
 

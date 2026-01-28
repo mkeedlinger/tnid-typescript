@@ -187,8 +187,13 @@ function logAnyId(id: DynamicTnid) {
 }
 
 // Generation with runtime names
-DynamicTnid.new_v0("user");
-DynamicTnid.new_v1("user");
+DynamicTnid.new_v0("user");           // time-ordered (alias: new_time_ordered)
+DynamicTnid.new_v1("user");           // high-entropy (alias: new_high_entropy)
+
+// Generation with explicit values (useful for testing/migrations)
+DynamicTnid.new_v0_with_time("user", new Date("2024-01-15"));
+DynamicTnid.new_v0_with_parts("user", 1705312800000n, 123n);
+DynamicTnid.new_v1_with_random("user", 0x123456789abcdef0123456789n);
 
 // Parsing any TNID
 DynamicTnid.parse("post.EUBcUw4T9x3KNOll-");
