@@ -1,25 +1,16 @@
 /**
- * Tests that verify TypeScript implementation matches the Rust CLI.
+ * Diagnostic tests that trace encoding steps for debugging mismatches.
  */
 
 import { assertEquals } from "@std/assert";
-import { Tnid } from "./main.ts";
-import {
-  cliMakeV0,
-  cliMakeV1,
-  cliEncodeName,
-  cliInspect,
-  randomTimestamp,
-  randomV0Random,
-  randomV1Random,
-  randomName,
-} from "./cli_harness.ts";
+import { Tnid } from "../../src/index.ts";
+import { cliMakeV0, cliMakeV1, cliInspect } from "./cli_harness.ts";
 
 // =============================================================================
 // Diagnostic Helpers - Trace encoding steps for debugging
 // =============================================================================
 
-/** Encode a name into 20 bits (mirrors main.ts encodeName) */
+/** Encode a name into 20 bits (mirrors name_encoding.ts) */
 function encodeName(name: string): number {
   const NAME_CHAR_TO_VALUE: Record<string, number> = {
     "0": 1, "1": 2, "2": 3, "3": 4, "4": 5,
@@ -37,7 +28,7 @@ function encodeName(name: string): number {
   return result;
 }
 
-/** Build 128-bit TNID value from parts (mirrors main.ts buildTnid) */
+/** Build 128-bit TNID value from parts (mirrors bits.ts logic) */
 function buildTnidValue(nameBits: number, payload: bigint, tnidVariant: bigint): bigint {
   const payloadA = (payload >> 72n) & ((1n << 28n) - 1n);
   const payloadB = (payload >> 60n) & ((1n << 12n) - 1n);
@@ -114,138 +105,7 @@ function traceV0Encoding(name: string, timestamp: bigint, random: bigint): Trace
 }
 
 // =============================================================================
-// Name Encoding Tests
-// =============================================================================
-
-Deno.test("rust compat: name encoding matches", async () => {
-  const names = ["user", "test", "a", "abcd", "0", "1234", "z", "zzzz"];
-
-  for (const name of names) {
-    const rustHex = await cliEncodeName(name);
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    // Generate an ID and extract name from inspection
-    const id = factory.v0_from_parts(0n, 0n);
-    // The name encoding is embedded in the TNID - if generation matches, encoding matches
-    const rustId = await cliMakeV0(name, 0n, 0n);
-    assertEquals(id, rustId, `Name encoding mismatch for "${name}"`);
-  }
-});
-
-// =============================================================================
-// V0 Generation Tests
-// =============================================================================
-
-Deno.test("rust compat: V0 with zeros", async () => {
-  const names = ["user", "test", "a", "abcd"];
-  for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v0_from_parts(0n, 0n);
-    const rust = await cliMakeV0(name, 0n, 0n);
-    assertEquals(ts, rust, `V0 mismatch for name="${name}" ts=0 r=0`);
-  }
-});
-
-Deno.test("rust compat: V0 with specific values", async () => {
-  const testCases: [string, bigint, bigint][] = [
-    ["user", 1000n, 12345n],
-    ["user", 1737903600000n, 0n],
-    ["test", 0n, (1n << 57n) - 1n],
-    ["a", (1n << 43n) - 1n, 0n],
-    ["abcd", 123456789n, 987654321n],
-  ];
-
-  for (const [name, timestamp, random] of testCases) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v0_from_parts(timestamp, random);
-    const rust = await cliMakeV0(name, timestamp, random);
-    assertEquals(ts, rust, `V0 mismatch for name="${name}" ts=${timestamp} r=${random}`);
-  }
-});
-
-Deno.test("rust compat: V0 with random values", async () => {
-  const iterations = 20;
-
-  for (let i = 0; i < iterations; i++) {
-    const name = randomName();
-    const timestamp = randomTimestamp();
-    const random = randomV0Random();
-
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v0_from_parts(timestamp, random);
-    const rust = await cliMakeV0(name, timestamp, random);
-    assertEquals(ts, rust, `V0 random mismatch #${i}: name="${name}" ts=${timestamp} r=${random}`);
-  }
-});
-
-// =============================================================================
-// V1 Generation Tests
-// =============================================================================
-
-Deno.test("rust compat: V1 with zeros", async () => {
-  const names = ["user", "test", "a", "abcd"];
-  for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v1_from_parts(0n);
-    const rust = await cliMakeV1(name, 0n);
-    assertEquals(ts, rust, `V1 mismatch for name="${name}" r=0`);
-  }
-});
-
-Deno.test("rust compat: V1 with specific values", async () => {
-  const testCases: [string, bigint][] = [
-    ["user", 12345n],
-    ["user", (1n << 100n) - 1n],
-    ["test", 0x123456789ABCDEFn],
-    ["a", 1n],
-    ["abcd", (1n << 50n)],
-  ];
-
-  for (const [name, random] of testCases) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v1_from_parts(random);
-    const rust = await cliMakeV1(name, random);
-    assertEquals(ts, rust, `V1 mismatch for name="${name}" r=${random}`);
-  }
-});
-
-Deno.test("rust compat: V1 with random values", async () => {
-  const iterations = 20;
-
-  for (let i = 0; i < iterations; i++) {
-    const name = randomName();
-    const random = randomV1Random();
-
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v1_from_parts(random);
-    const rust = await cliMakeV1(name, random);
-    assertEquals(ts, rust, `V1 random mismatch #${i}: name="${name}" r=${random}`);
-  }
-});
-
-// =============================================================================
-// Round-trip Tests
-// =============================================================================
-
-Deno.test("rust compat: parse round-trips generated IDs", async () => {
-  const names = ["user", "test", "a", "0"];
-
-  for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-
-    // V0
-    const v0 = factory.v0_from_parts(randomTimestamp(), randomV0Random());
-    const parsedV0 = factory.parse(v0);
-    assertEquals(parsedV0, v0);
-
-    // V1
-    const v1 = factory.v1_from_parts(randomV1Random());
-    const parsedV1 = factory.parse(v1);
-    assertEquals(parsedV1, v1);
-  }
-});
-
-// =============================================================================
-// Diagnostic Tests - Trace encoding to find mismatches
+// Diagnostic Tests
 // =============================================================================
 
 Deno.test("diagnostic: V1 max random - trace encoding steps", async () => {
@@ -275,7 +135,6 @@ Deno.test("diagnostic: V1 max random - trace encoding steps", async () => {
   console.log(`  TNID match: ${trace.tnid === rustTnid}`);
   console.log(`  UUID match: ${trace.uuid === rustInspect.uuidString}`);
 
-  // The key comparison - if UUIDs match but TNIDs don't, the encoding is wrong
   // Reverse-engineer what Rust computed
   const rustUuidHex = rustInspect.uuidString.replace(/-/g, "");
   const rustValue = BigInt("0x" + rustUuidHex);
@@ -303,8 +162,6 @@ Deno.test("diagnostic: V1 max random - trace encoding steps", async () => {
   console.log(`\nReconstructed Rust payload: 0x${rustPayload.toString(16)}`);
   console.log(`Input random was:           0x${random.toString(16)}`);
 
-  // Note: trace.uuid uses old payload-split logic for display, so it won't match Rust's UUID.
-  // The important assertion is that the actual TNID strings match.
   assertEquals(trace.tnid, rustTnid, "TNID strings should match");
 });
 

@@ -3,7 +3,7 @@
  * Run with: deno run example.ts
  */
 
-import { DynamicTnid, Tnid, TnidType, UuidLike } from "./main.ts";
+import { DynamicTnid, Tnid, TnidType, UuidLike } from "../src/index.ts";
 
 // =============================================================================
 // Typed TNIDs - compile-time name validation

@@ -1,6 +1,14 @@
 {
+  "name": "@tnid/core",
+  "version": "0.1.0",
+  "exports": "./src/index.ts",
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "test": "deno test tests/",
+    "test:unit": "deno test tests/unit_test.ts",
+    "test:compat": "deno test tests/rust_compat/",
+    "example": "deno run examples/basic.ts",
+    "build": "deno run -A scripts/build_npm.ts",
+    "check": "deno check src/**/*.ts"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1"
