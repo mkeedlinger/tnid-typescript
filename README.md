@@ -54,8 +54,8 @@ const fromUuid: UserId = UserId.parseUuidString(uuid);
 - **UUID compatible**: Store in any UUID column, use with existing UUID tooling
 - **Time-ordered (V0)**: Sortable by creation time, like UUIDv7
 - **High-entropy (V1)**: Maximum randomness, like UUIDv4
-- **Just strings**: At runtime, TNIDs are plain strings. Use as Map keys, in
-  JSON, or compare with `===`
+- **String-backed**: At runtime, TNIDs are their string representation (e.g.
+  `user.Br2flcNDfF6LYICnT`). Use as Map keys, in JSON, or compare with `===`
 
 ```typescript
 const id = UserId.new_v0();
