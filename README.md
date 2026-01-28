@@ -23,14 +23,12 @@ deno add npm:@tnid/core
 
 ## Platform Support
 
-| Platform | Minimum Version |
-| -------- | --------------- |
-| Node.js  | 20+             |
-| Deno     | 1.0+            |
-| Bun      | 1.0+            |
-| Browsers | ES2020+         |
+Requires `globalThis.crypto` (Web Crypto API):
 
-Requires `globalThis.crypto` (Web Crypto API).
+- Node.js 20+
+- Deno 1.0+
+- Bun 1.0+
+- Modern browsers (ES2020+)
 
 ## Quick Start
 
@@ -92,9 +90,9 @@ id === otherUserId; // true/false
 import {
   Case, // "lower" | "upper"
   DynamicTnid, // Runtime TNID operations (type + namespace)
-  Tnid, // Factory creator function
-  NamedTnid, // Named TNID interface
-  TnidType, // Type helper to extract ID type from factory
+  Tnid, // NamedTnid creator function
+  NamedTnid, // NamedTnid interface
+  TnidType, // Type helper to extract ID type
   // Types only:
   TnidValue, // Branded string type
   TnidVariant, // "v0" | "v1" | "v2" | "v3"
@@ -106,7 +104,7 @@ import {
 
 ### `Tnid(name)`
 
-Creates a factory for TNIDs with a specific name. The name is validated at
+Creates a `NamedTnid` for a specific name. The name is validated at
 **compile time**.
 
 ```typescript
@@ -117,9 +115,9 @@ const ItemId = Tnid("item");
 
 #### Name Rules
 
-- **Length**: 1-4 characters
-- **Valid characters**: `0-4` and `a-z` (31 characters total)
-- **Case**: lowercase only
+- 1-4 characters
+- Only `0-4` and `a-z` (31 characters total)
+- Lowercase only
 
 ```typescript
 // Valid names
@@ -140,67 +138,44 @@ Tnid(""); // ✗ empty not allowed
 
 ### `NamedTnid<Name>` (returned by `Tnid()`)
 
-The object returned by `Tnid(name)` has these methods:
+#### Generation
 
-#### Properties
-
-| Property | Type   | Description                                |
-| -------- | ------ | ------------------------------------------ |
-| `name`   | `Name` | The TNID name this creates IDs for |
-
-#### Generation Methods
-
-| Method                                   | Returns           | Description                                       |
-| ---------------------------------------- | ----------------- | ------------------------------------------------- |
-| `new_v0()`                               | `TnidValue<Name>` | Generate a time-ordered ID (like UUIDv7)          |
-| `new_v1()`                               | `TnidValue<Name>` | Generate a high-entropy random ID (like UUIDv4)   |
-| `v0_from_parts(timestampMs, randomBits)` | `TnidValue<Name>` | Create V0 from explicit parts (for testing)       |
-| `v1_from_parts(randomBits)`              | `TnidValue<Name>` | Create V1 from explicit random bits (for testing) |
-
-#### Parsing Methods
-
-| Method                  | Returns           | Throws                           | Description             |
-| ----------------------- | ----------------- | -------------------------------- | ----------------------- |
-| `parse(s)`              | `TnidValue<Name>` | If invalid or name mismatch      | Parse a TNID string     |
-| `parseUuidString(uuid)` | `TnidValue<Name>` | If invalid UUID or name mismatch | Parse a UUID hex string |
-
-#### Utility Methods
-
-| Method                    | Returns       | Description                            |
-| ------------------------- | ------------- | -------------------------------------- |
-| `variant(id)`             | `TnidVariant` | Get the variant (`"v0"`, `"v1"`, etc.) |
-| `toUuidString(id, case?)` | `string`      | Convert to UUID hex format             |
-| `nameHex()`               | `string`      | Get the name as a 5-char hex string    |
-
-#### Example
+`new_v0()` and `new_v1()` create new IDs. V0 is time-ordered (like UUIDv7), V1
+is high-entropy random (like UUIDv4).
 
 ```typescript
 const UserId = Tnid("user");
 type UserId = TnidType<typeof UserId>;
 
-// Generation
-const id: UserId = UserId.new_v0(); // "user.Br2flcNDfF6LYICnT"
-const id2: UserId = UserId.new_v1(); // "user.EUBcUw4T9x3KNOll-"
+UserId.new_v0();                        // time-ordered ID
+UserId.new_v1();                        // high-entropy random ID
+UserId.v0_from_parts(1234567890n, 0n);  // V0 with explicit timestamp/random (for testing)
+UserId.v1_from_parts(0n);               // V1 with explicit random bits (for testing)
+```
 
-// Parsing
-const parsed: UserId = UserId.parse("user.Br2flcNDfF6LYICnT");
-const fromUuid: UserId = UserId.parseUuidString(
-  "d6157329-4640-8e30-8012-345678901234",
-);
+#### Parsing
 
-// Utilities
-UserId.variant(id); // "v0"
-UserId.toUuidString(id); // "d6157329-4640-8e30-8012-..."
-UserId.toUuidString(id, "upper"); // "D6157329-4640-8E30-8012-..."
-UserId.nameHex(); // "d6157"
+`parse()` and `parseUuidString()` validate input and return typed IDs. Both
+throw on invalid input or name mismatch.
 
-// Property
-UserId.name; // "user"
+```typescript
+UserId.parse("user.Br2flcNDfF6LYICnT");              // parse TNID string
+UserId.parseUuidString("d6157329-4640-8e30-...");    // parse UUID hex string
+```
+
+#### Inspection and Conversion
+
+```typescript
+UserId.name;                      // "user" - the TNID name
+UserId.variant(id);               // "v0" or "v1" - get the variant
+UserId.toUuidString(id);          // "d6157329-4640-8e30-..." - convert to UUID
+UserId.toUuidString(id, "upper"); // "D6157329-4640-8E30-..." - uppercase UUID
+UserId.nameHex();                 // "d6157" - name as 5-char hex
 ```
 
 ---
 
-### `TnidType<Factory>`
+### `TnidType<T>`
 
 Type helper to extract the `TnidValue` type from a `NamedTnid`.
 
@@ -232,60 +207,40 @@ function logAnyId(id: DynamicTnid) {
   console.log(DynamicTnid.getName(id), id);
 }
 
-const userId: UserId = UserId.new_v0();
-const postId: PostId = PostId.new_v0();
-
 logAnyId(userId); // works
 logAnyId(postId); // works
 ```
 
-#### Namespace Methods
+#### Generation
 
-##### Generation
-
-| Method                                         | Returns       | Description                                |
-| ---------------------------------------------- | ------------- | ------------------------------------------ |
-| `new_v0(name)`                                 | `DynamicTnid` | Generate time-ordered ID with runtime name |
-| `new_v1(name)`                                 | `DynamicTnid` | Generate high-entropy ID with runtime name |
-| `new_time_ordered(name)`                       | `DynamicTnid` | Alias for `new_v0`                         |
-| `new_high_entropy(name)`                       | `DynamicTnid` | Alias for `new_v1`                         |
-| `new_v0_with_time(name, date)`                 | `DynamicTnid` | V0 with specific timestamp                 |
-| `new_v0_with_parts(name, epochMillis, random)` | `DynamicTnid` | V0 with explicit parts                     |
-| `new_v1_with_random(name, randomBits)`         | `DynamicTnid` | V1 with explicit random bits               |
-
-##### Parsing
-
-| Method                    | Returns       | Throws     | Description           |
-| ------------------------- | ------------- | ---------- | --------------------- |
-| `parse(s)`                | `DynamicTnid` | If invalid | Parse any TNID string |
-| `parse_uuid_string(uuid)` | `DynamicTnid` | If invalid | Parse UUID to TNID    |
-
-##### Inspection
-
-| Method                    | Returns       | Description              |
-| ------------------------- | ------------- | ------------------------ |
-| `getName(id)`             | `string`      | Extract the name portion |
-| `getNameHex(id)`          | `string`      | Get name as 5-char hex   |
-| `getVariant(id)`          | `TnidVariant` | Get the variant          |
-| `toUuidString(id, case?)` | `string`      | Convert to UUID hex      |
-
-#### Example
+Create IDs with runtime names. Names are validated at runtime.
 
 ```typescript
-// Runtime name - useful for dynamic/generic code
-const entityType = "user"; // from config, API, etc.
-const id = DynamicTnid.new_v0(entityType);
+DynamicTnid.new_v0("user");                          // time-ordered ID
+DynamicTnid.new_v1("user");                          // high-entropy random ID
+DynamicTnid.new_v0_with_time("log", new Date());     // V0 with specific timestamp
+DynamicTnid.new_v0_with_parts("log", 1234567890n, 0n); // V0 with explicit parts
+DynamicTnid.new_v1_with_random("log", 0n);           // V1 with explicit random
+```
 
-// Parse any TNID without knowing its type
-const unknown = DynamicTnid.parse("post.EUBcUw4T9x3KNOll-");
-console.log(DynamicTnid.getName(unknown)); // "post"
-console.log(DynamicTnid.getVariant(unknown)); // "v1"
+#### Parsing
 
-// Create with specific timestamp
-const backdated = DynamicTnid.new_v0_with_time("log", new Date("2024-01-01"));
+Parse any TNID without knowing its type ahead of time. Both throw on invalid
+input.
 
-// Convert to UUID
-const uuid = DynamicTnid.toUuidString(id);
+```typescript
+DynamicTnid.parse("post.EUBcUw4T9x3KNOll-");         // parse any TNID string
+DynamicTnid.parse_uuid_string("d6157329-4640-...");  // parse UUID to TNID
+```
+
+#### Inspection
+
+```typescript
+DynamicTnid.getName(id);              // "user" - extract the name
+DynamicTnid.getNameHex(id);           // "d6157" - name as 5-char hex
+DynamicTnid.getVariant(id);           // "v0" or "v1"
+DynamicTnid.toUuidString(id);         // convert to UUID hex
+DynamicTnid.toUuidString(id, "upper"); // uppercase UUID
 ```
 
 ---
@@ -297,31 +252,29 @@ both a **type** and a **namespace**.
 
 #### As a Type
 
-`UuidLike` represents any valid UUID hex string (format:
-`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`):
+`UuidLike` represents any valid UUID hex string
+(`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`):
 
 ```typescript
 function storeInDatabase(uuid: UuidLike) { ... }
 ```
 
-#### Namespace Methods
+#### Methods
 
-| Method              | Returns       | Throws              | Description                         |
-| ------------------- | ------------- | ------------------- | ----------------------------------- |
-| `fromTnid(id)`      | `UuidLike`    | -                   | Convert TNID to UUID string         |
-| `parse(s)`          | `UuidLike`    | If invalid format   | Parse any UUID string (format only) |
-| `toTnid(uuid)`      | `DynamicTnid` | If not a valid TNID | Convert UUID to TNID                |
-| `toUpperCase(uuid)` | `UuidLike`    | -                   | Convert to uppercase                |
+```typescript
+UuidLike.fromTnid(id);        // convert TNID to UUID string
+UuidLike.parse(s);            // parse any UUID (validates format only, not TNID structure)
+UuidLike.toTnid(uuid);        // convert UUID to TNID (throws if not a valid TNID)
+UuidLike.toUpperCase(uuid);   // convert to uppercase
+```
 
 #### Example
 
 ```typescript
-const UserId = Tnid("user");
 const id = UserId.new_v0();
 
 // TNID to UUID
 const uuid: UuidLike = UuidLike.fromTnid(id);
-// "d6157329-4640-8e30-8012-345678901234"
 
 // Parse any UUID (doesn't validate TNID structure)
 const anyUuid = UuidLike.parse("550e8400-e29b-41d4-a716-446655440000");
@@ -333,10 +286,6 @@ try {
 } catch (e) {
   console.log("Not a valid TNID");
 }
-
-// Case conversion
-const upper = UuidLike.toUpperCase(uuid);
-// "D6157329-4640-8E30-8012-345678901234"
 ```
 
 ---
