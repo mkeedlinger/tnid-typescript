@@ -1,6 +1,6 @@
 /**
  * TNID TypeScript Example
- * Run with: deno run example.ts
+ * Run with: deno run packages/core/examples/basic.ts
  */
 
 import { DynamicTnid, Tnid, type TnidType, UuidLike } from "../src/index.ts";
