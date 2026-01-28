@@ -53,7 +53,7 @@ Deno.test("rust compat: V0 with random values", async () => {
   }
 });
 
-Deno.test("rust compat: V0 parse round-trips", async () => {
+Deno.test("rust compat: V0 parse round-trips", () => {
   const names = ["user", "test", "a", "0"];
 
   for (const name of names) {

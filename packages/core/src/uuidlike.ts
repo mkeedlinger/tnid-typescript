@@ -16,8 +16,20 @@ import {
 } from "./uuid.ts";
 import { toUuidStringImpl } from "./dynamic.ts";
 
+/** Interface for UuidLike static methods. */
+export interface UuidLikeNamespace {
+  /** Create from a TNID (always valid). */
+  fromTnid(id: DynamicTnid): UuidLike;
+  /** Parse UUID hex string (format validation only, not TNID validation). */
+  parse(s: string): UuidLike;
+  /** Try to convert to DynamicTnid (validates TNID structure). */
+  toTnid(uuid: UuidLike): DynamicTnid;
+  /** Format as uppercase UUID hex string. */
+  toUpperCase(uuid: UuidLike): UuidLike;
+}
+
 /** Wrapper for UUID hex strings that may or may not be valid TNIDs. */
-export const UuidLike = {
+export const UuidLike: UuidLikeNamespace = {
   /** Create from a TNID (always valid). */
   fromTnid(id: DynamicTnid): UuidLike {
     return toUuidStringImpl(id, false) as UuidLike;
@@ -50,4 +62,4 @@ export const UuidLike = {
   toUpperCase(uuid: UuidLike): UuidLike {
     return (uuid as string).toUpperCase() as UuidLike;
   },
-} as const;
+};

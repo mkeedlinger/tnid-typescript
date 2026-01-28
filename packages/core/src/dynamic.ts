@@ -117,8 +117,38 @@ function parseDynamicUuidStringImpl(uuid: string): DynamicTnid {
 // DynamicTnid Namespace
 // -----------------------------------------------------------------------------
 
+/** Interface for DynamicTnid static methods. */
+export interface DynamicTnidNamespace {
+  /** Generate a new time-sortable TNID (variant 0) with runtime name validation. */
+  new_v0(name: string): DynamicTnid;
+  /** Alias for new_v0. */
+  new_time_ordered(name: string): DynamicTnid;
+  /** Generate a new time-sortable TNID with a specific timestamp. */
+  new_v0_with_time(name: string, time: Date): DynamicTnid;
+  /** Generate a new time-sortable TNID with explicit timestamp and random components. */
+  new_v0_with_parts(name: string, epochMillis: bigint, random: bigint): DynamicTnid;
+  /** Generate a new high-entropy TNID (variant 1) with runtime name validation. */
+  new_v1(name: string): DynamicTnid;
+  /** Alias for new_v1. */
+  new_high_entropy(name: string): DynamicTnid;
+  /** Generate a new high-entropy TNID with explicit random bits. */
+  new_v1_with_random(name: string, randomBits: bigint): DynamicTnid;
+  /** Parse any valid TNID string. */
+  parse(s: string): DynamicTnid;
+  /** Parse a UUID hex string into a DynamicTnid (validates TNID structure). */
+  parse_uuid_string(uuid: string): DynamicTnid;
+  /** Get the name from a TNID. */
+  getName(id: DynamicTnid): string;
+  /** Get the name encoded as a 5-character hex string. */
+  getNameHex(id: DynamicTnid): string;
+  /** Get the variant of a TNID. */
+  getVariant(id: DynamicTnid): TnidVariant;
+  /** Convert to UUID hex string format. */
+  toUuidString(id: DynamicTnid, caseFormat?: Case): string;
+}
+
 /** Static methods for working with any TNID regardless of name. */
-export const DynamicTnid = {
+export const DynamicTnid: DynamicTnidNamespace = {
   /** Generate a new time-sortable TNID (variant 0) with runtime name validation. */
   new_v0(name: string): DynamicTnid {
     if (!isValidNameRuntime(name)) {
@@ -228,7 +258,7 @@ export const DynamicTnid = {
   toUuidString(id: DynamicTnid, caseFormat: Case = "lower"): string {
     return toUuidStringImpl(id, caseFormat === "upper");
   },
-} as const;
+};
 
 // Export helper functions for use by factory.ts
 export {

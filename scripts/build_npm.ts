@@ -1,70 +1,176 @@
 /**
  * Build script for publishing to npm using dnt (Deno to Node Transform).
  *
+ * Builds all packages in the monorepo with synchronized versions.
+ *
  * Run with: deno run -A scripts/build_npm.ts
  */
 
-import { build, emptyDir } from "jsr:@deno/dnt";
+import { build, emptyDir } from "@deno/dnt";
+import { toFileUrl } from "@std/path";
 
-const denoJson = JSON.parse(await Deno.readTextFile("./deno.json"));
+// Read shared config from root deno.json
+const rootConfig = JSON.parse(await Deno.readTextFile("./deno.json"));
+const VERSION = rootConfig.version;
+const LICENSE = rootConfig.license;
 
-await emptyDir("./npm");
+interface PackageConfig {
+  name: string;
+  dir: string;
+  entryPoints: string | { name: string; path: string }[];
+  description: string;
+  readme: string;
+  dependencies?: Record<string, string>;
+  mappings?: Record<string, { name: string; version: string; subPath?: string }>;
+  // Skip npm install for packages with local dependencies not yet published
+  skipNpmInstall?: boolean;
+  // Import map for resolving package imports
+  importMap?: string;
+}
 
-await build({
-  entryPoints: ["./src/index.ts"],
-  outDir: "./npm",
-  shims: {},
-  filterDiagnostic(diagnostic) {
-    // Ignore diagnostics from test files
-    const file = diagnostic.file?.fileName;
-    if (file && (file.includes("/tests/") || file.includes("_test.ts"))) {
-      return false;
-    }
-    return true;
-  },
-  test: false, // Don't run tests as part of the build
-  package: {
-    name: denoJson.name,
-    version: denoJson.version,
+// Packages in build order (dependencies first)
+const packages: PackageConfig[] = [
+  {
+    name: "@tnid/core",
+    dir: "core",
+    entryPoints: [
+      { name: ".", path: "./packages/core/src/index.ts" },
+      { name: "./uuid", path: "./packages/core/src/uuid.ts" },
+    ],
     description:
       "Type-safe, named, unique identifiers (TNIDs) - UUID-compatible IDs with embedded type names",
-    license: denoJson.license,
-    repository: {
-      type: "git",
-      url: "git+https://github.com/tnid/tnid-typescript.git",
-    },
-    bugs: {
-      url: "https://github.com/tnid/tnid-typescript/issues",
-    },
-    keywords: [
-      "uuid",
-      "id",
-      "identifier",
-      "tnid",
-      "typed",
-      "type-safe",
-    ],
-    publishConfig: {
-      access: "public",
-    },
-    engines: {
-      node: ">=20",
-    },
+    readme: "./packages/core/README.md",
   },
-  postBuild() {
-    // Copy additional files to npm directory
-    try {
-      Deno.copyFileSync("LICENSE.txt", "npm/LICENSE");
-    } catch {
-      console.warn("Warning: LICENSE file not found, skipping");
-    }
-    try {
-      Deno.copyFileSync("README.md", "npm/README.md");
-    } catch {
-      console.warn("Warning: README.md file not found, skipping");
-    }
+  {
+    name: "@tnid/encryption",
+    dir: "encryption",
+    entryPoints: "./packages/encryption/src/index.ts",
+    description:
+      "Format-preserving encryption for TNIDs - convert time-ordered IDs to random-looking IDs",
+    readme: "./packages/encryption/README.md",
+    importMap: "./packages/encryption/deno.json",
+    dependencies: { "@tnid/core": `^${VERSION}` },
+    // Mappings are computed below with resolved paths
+    skipNpmInstall: true,
   },
-});
+];
 
-console.log("\nBuild complete! To publish:");
-console.log("  cd npm && npm publish");
+console.log(`Building TNID packages v${VERSION}\n`);
+
+for (const pkg of packages) {
+  console.log(`\n${"=".repeat(60)}`);
+  console.log(`Building ${pkg.name}@${VERSION}...`);
+  console.log(`${"=".repeat(60)}\n`);
+
+  await emptyDir(`./npm/${pkg.dir}`);
+
+  // Normalize entryPoints to the format dnt expects
+  const entryPoints = typeof pkg.entryPoints === "string"
+    ? [pkg.entryPoints]
+    : pkg.entryPoints;
+
+  // Resolve import map to absolute URL if specified
+  const importMapUrl = pkg.importMap
+    ? toFileUrl(Deno.realPathSync(pkg.importMap)).href
+    : undefined;
+
+  // Compute mappings with resolved paths for packages with local dependencies
+  let mappings = pkg.mappings || {};
+  if (pkg.name === "@tnid/encryption") {
+    // Resolve the actual file paths that dnt will see
+    const coreIndex = toFileUrl(Deno.realPathSync("./packages/core/src/index.ts")).href;
+    const coreUuid = toFileUrl(Deno.realPathSync("./packages/core/src/uuid.ts")).href;
+    mappings = {
+      [coreIndex]: { name: "@tnid/core", version: `^${VERSION}` },
+      [coreUuid]: { name: "@tnid/core", version: `^${VERSION}`, subPath: "uuid" },
+    };
+
+    // Create node_modules/@tnid/core symlink to local core build for type checking
+    // This must be done before build() since we're skipping npm install
+    const nodeModulesPath = `./npm/${pkg.dir}/node_modules/@tnid`;
+    await Deno.mkdir(nodeModulesPath, { recursive: true });
+    try {
+      await Deno.remove(`${nodeModulesPath}/core`, { recursive: true });
+    } catch { /* ignore if doesn't exist */ }
+    // Use absolute path for the symlink target
+    const coreBuildPath = Deno.realPathSync("./npm/core");
+    await Deno.symlink(coreBuildPath, `${nodeModulesPath}/core`);
+    console.log(`  Linked @tnid/core from ${coreBuildPath}`);
+  }
+
+  await build({
+    entryPoints,
+    outDir: `./npm/${pkg.dir}`,
+    shims: {},
+    importMap: importMapUrl,
+    mappings,
+    skipNpmInstall: pkg.skipNpmInstall ?? false,
+    compilerOptions: {
+      // Include DOM lib for Web Crypto API types (CryptoKey, etc)
+      lib: ["ESNext", "DOM"],
+    },
+    filterDiagnostic(diagnostic) {
+      // Ignore diagnostics from test files
+      const file = diagnostic.file?.fileName;
+      if (file && (file.includes("/tests/") || file.includes("_test.ts"))) {
+        return false;
+      }
+      return true;
+    },
+    test: false,
+    package: {
+      name: pkg.name,
+      version: VERSION,
+      description: pkg.description,
+      license: LICENSE,
+      repository: {
+        type: "git",
+        url: "git+https://github.com/tnid/tnid-typescript.git",
+      },
+      bugs: {
+        url: "https://github.com/tnid/tnid-typescript/issues",
+      },
+      keywords: [
+        "uuid",
+        "id",
+        "identifier",
+        "tnid",
+        "typed",
+        "type-safe",
+      ],
+      publishConfig: {
+        access: "public",
+      },
+      engines: {
+        node: ">=20",
+      },
+      dependencies: pkg.dependencies || {},
+    },
+    postBuild() {
+      // Copy LICENSE
+      try {
+        Deno.copyFileSync("LICENSE.txt", `npm/${pkg.dir}/LICENSE`);
+      } catch {
+        console.warn("  Warning: LICENSE.txt not found, skipping");
+      }
+
+      // Copy README
+      try {
+        Deno.copyFileSync(pkg.readme, `npm/${pkg.dir}/README.md`);
+      } catch {
+        console.warn(`  Warning: ${pkg.readme} not found, skipping`);
+      }
+    },
+  });
+
+  console.log(`\n  Built ${pkg.name}@${VERSION}`);
+}
+
+console.log(`\n${"=".repeat(60)}`);
+console.log("Build complete!");
+console.log(`${"=".repeat(60)}\n`);
+
+console.log("To publish all packages:");
+for (const pkg of packages) {
+  console.log(`  cd npm/${pkg.dir} && npm publish`);
+}

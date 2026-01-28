@@ -1,0 +1,8 @@
+{
+  "name": "@tnid/encryption",
+  "exports": "./src/index.ts",
+  "imports": {
+    "@tnid/core": "../core/src/index.ts",
+    "@tnid/core/uuid": "../core/src/uuid.ts"
+  }
+}

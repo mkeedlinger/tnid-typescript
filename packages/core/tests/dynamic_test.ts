@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "@std/assert";
-import { Tnid, TnidType, DynamicTnid } from "../src/index.ts";
+import { Tnid, type TnidType, DynamicTnid } from "../src/index.ts";
 
 // =============================================================================
 // DynamicTnid Type Compatibility

@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { Tnid, TnidType } from "../src/index.ts";
+import { Tnid, type TnidType } from "../src/index.ts";
 
 // =============================================================================
 // COMPILE-TIME TESTS - Valid Names

@@ -2,7 +2,10 @@
  * Test harness for comparing TypeScript implementation against the Rust CLI.
  */
 
-const CLI_PATH = "./tnid-cli";
+import * as path from "@std/path";
+
+// Resolve CLI path relative to this file (cli is at repo root)
+const CLI_PATH = path.join(import.meta.dirname!, "../../../../tnid-cli");
 
 async function runCli(args: string[]): Promise<string> {
   const command = new Deno.Command(CLI_PATH, { args, stdout: "piped", stderr: "piped" });
@@ -14,12 +17,12 @@ async function runCli(args: string[]): Promise<string> {
 }
 
 /** Generate a V0 TNID using the Rust CLI */
-export async function cliMakeV0(name: string, timestampMs: bigint, random: bigint): Promise<string> {
+export function cliMakeV0(name: string, timestampMs: bigint, random: bigint): Promise<string> {
   return runCli(["internals", "make-v0", name, timestampMs.toString(), random.toString()]);
 }
 
 /** Generate a V1 TNID using the Rust CLI */
-export async function cliMakeV1(name: string, random: bigint): Promise<string> {
+export function cliMakeV1(name: string, random: bigint): Promise<string> {
   const hex = "0x" + random.toString(16);
   return runCli(["internals", "make-v1", name, hex]);
 }
@@ -51,7 +54,7 @@ export async function cliInspect(tnid: string): Promise<{
 }
 
 /** Encode a name using the Rust CLI */
-export async function cliEncodeName(name: string): Promise<string> {
+export function cliEncodeName(name: string): Promise<string> {
   return runCli(["internals", "encode-name", name]);
 }
 

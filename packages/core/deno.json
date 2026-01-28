@@ -1,0 +1,7 @@
+{
+  "name": "@tnid/core",
+  "exports": {
+    ".": "./src/index.ts",
+    "./uuid": "./src/uuid.ts"
+  }
+}

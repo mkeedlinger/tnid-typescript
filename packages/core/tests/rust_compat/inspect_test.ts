@@ -146,7 +146,7 @@ Deno.test("rust compat: tnid.nameHex matches Rust", async () => {
 // Round-trip: TNID -> UUID -> TNID
 // =============================================================================
 
-Deno.test("rust compat: UUID round-trip preserves TNID", async () => {
+Deno.test("rust compat: UUID round-trip preserves TNID", () => {
   const iterations = 10;
 
   for (let i = 0; i < iterations; i++) {
