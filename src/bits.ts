@@ -3,6 +3,8 @@
 // Mask-based approach matching Rust implementation
 // =============================================================================
 
+import { crypto } from "./crypto.ts";
+
 // Masks for UUID version 8 and variant bits
 export const UUID_V8_MASK = 0x00000000_0000_8000_8000_000000000000n;
 

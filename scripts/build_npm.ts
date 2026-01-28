@@ -6,14 +6,14 @@
 
 import { build, emptyDir } from "jsr:@deno/dnt";
 
+const denoJson = JSON.parse(await Deno.readTextFile("./deno.json"));
+
 await emptyDir("./npm");
 
 await build({
   entryPoints: ["./src/index.ts"],
   outDir: "./npm",
-  shims: {
-    crypto: true,
-  },
+  shims: {},
   filterDiagnostic(diagnostic) {
     // Ignore diagnostics from test files
     const file = diagnostic.file?.fileName;
@@ -24,16 +24,17 @@ await build({
   },
   test: false, // Don't run tests as part of the build
   package: {
-    name: "@tnid/core",
-    version: Deno.args[0] || "0.0.0",
-    description: "Type-safe, named, unique identifiers (TNIDs) - UUIDv8-compatible IDs with embedded type names",
-    license: "MIT",
+    name: denoJson.name,
+    version: denoJson.version,
+    description:
+      "Type-safe, named, unique identifiers (TNIDs) - UUID-compatible IDs with embedded type names",
+    license: denoJson.license,
     repository: {
       type: "git",
-      url: "git+https://github.com/tnid/tnid.git",
+      url: "git+https://github.com/tnid/tnid-typescript.git",
     },
     bugs: {
-      url: "https://github.com/tnid/tnid/issues",
+      url: "https://github.com/tnid/tnid-typescript/issues",
     },
     keywords: [
       "uuid",
@@ -42,13 +43,18 @@ await build({
       "tnid",
       "typed",
       "type-safe",
-      "uuidv8",
     ],
+    publishConfig: {
+      access: "public",
+    },
+    engines: {
+      node: ">=20",
+    },
   },
   postBuild() {
     // Copy additional files to npm directory
     try {
-      Deno.copyFileSync("LICENSE", "npm/LICENSE");
+      Deno.copyFileSync("LICENSE.txt", "npm/LICENSE");
     } catch {
       console.warn("Warning: LICENSE file not found, skipping");
     }
@@ -61,4 +67,4 @@ await build({
 });
 
 console.log("\nBuild complete! To publish:");
-console.log("  cd npm && npm publish --access public");
+console.log("  cd npm && npm publish");

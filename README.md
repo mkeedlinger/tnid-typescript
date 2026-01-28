@@ -21,6 +21,17 @@ bun add @tnid/core
 deno add npm:@tnid/core
 ```
 
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| Node.js  | 20+             |
+| Deno     | 1.0+            |
+| Bun      | 1.0+            |
+| Browsers | ES2020+         |
+
+Requires `globalThis.crypto` (Web Crypto API).
+
 ## Quick Start
 
 ```typescript
