@@ -9,7 +9,7 @@ import { Tnid, DynamicTnid } from "../src/index.ts";
 // Generation Tests
 // =============================================================================
 
-Deno.test("factory: new_v0 generates valid TNID strings", () => {
+Deno.test("tnid: new_v0 generates valid TNID strings", () => {
   const UserId = Tnid("user");
   const id = UserId.new_v0();
 
@@ -19,7 +19,7 @@ Deno.test("factory: new_v0 generates valid TNID strings", () => {
   assertEquals(parts[1].length, 17);
 });
 
-Deno.test("factory: new_v0 generates unique IDs", () => {
+Deno.test("tnid: new_v0 generates unique IDs", () => {
   const UserId = Tnid("user");
   const id1 = UserId.new_v0();
   const id2 = UserId.new_v0();
@@ -30,7 +30,7 @@ Deno.test("factory: new_v0 generates unique IDs", () => {
   assertNotEquals(id1, id3);
 });
 
-Deno.test("factory: generated IDs are valid strings", () => {
+Deno.test("tnid: generated IDs are valid strings", () => {
   const UserId = Tnid("user");
   const id = UserId.new_v0();
 
@@ -38,14 +38,14 @@ Deno.test("factory: generated IDs are valid strings", () => {
   assertEquals(id.startsWith("user."), true);
 });
 
-Deno.test("factory: v0_from_parts produces v0 variant", () => {
+Deno.test("tnid: v0_from_parts produces v0 variant", () => {
   const UserId = Tnid("user");
   const id = UserId.v0_from_parts(1000n, 12345n);
 
   assertEquals(DynamicTnid.getVariant(id), "v0");
 });
 
-Deno.test("factory: v1_from_parts produces v1 variant", () => {
+Deno.test("tnid: v1_from_parts produces v1 variant", () => {
   const UserId = Tnid("user");
   const id = UserId.v1_from_parts(12345n);
 
@@ -56,7 +56,7 @@ Deno.test("factory: v1_from_parts produces v1 variant", () => {
 // Parsing Tests
 // =============================================================================
 
-Deno.test("factory: parse accepts valid TNID strings", () => {
+Deno.test("tnid: parse accepts valid TNID strings", () => {
   const UserId = Tnid("user");
 
   const original = UserId.new_v0();
@@ -65,7 +65,7 @@ Deno.test("factory: parse accepts valid TNID strings", () => {
   assertEquals(parsed, original);
 });
 
-Deno.test("factory: parse rejects wrong name", () => {
+Deno.test("tnid: parse rejects wrong name", () => {
   const UserId = Tnid("user");
   const PostId = Tnid("post");
 
@@ -78,7 +78,7 @@ Deno.test("factory: parse rejects wrong name", () => {
   );
 });
 
-Deno.test("factory: parse rejects missing separator", () => {
+Deno.test("tnid: parse rejects missing separator", () => {
   const UserId = Tnid("user");
 
   assertThrows(
@@ -88,7 +88,7 @@ Deno.test("factory: parse rejects missing separator", () => {
   );
 });
 
-Deno.test("factory: parse rejects invalid data length", () => {
+Deno.test("tnid: parse rejects invalid data length", () => {
   const UserId = Tnid("user");
 
   assertThrows(
@@ -98,7 +98,7 @@ Deno.test("factory: parse rejects invalid data length", () => {
   );
 });
 
-Deno.test("factory: parse rejects invalid data characters", () => {
+Deno.test("tnid: parse rejects invalid data characters", () => {
   const UserId = Tnid("user");
 
   assertThrows(
@@ -112,7 +112,7 @@ Deno.test("factory: parse rejects invalid data characters", () => {
 // Round-trip Tests
 // =============================================================================
 
-Deno.test("factory: round-trip encoding is stable", () => {
+Deno.test("tnid: round-trip encoding is stable", () => {
   const UserId = Tnid("user");
 
   for (let i = 0; i < 10; i++) {
@@ -122,7 +122,7 @@ Deno.test("factory: round-trip encoding is stable", () => {
   }
 });
 
-Deno.test("factory: different names produce different prefixes", () => {
+Deno.test("tnid: different names produce different prefixes", () => {
   const A = Tnid("a");
   const B = Tnid("b");
   const User = Tnid("user");
@@ -138,7 +138,7 @@ Deno.test("factory: different names produce different prefixes", () => {
 // Name Encoding Edge Cases
 // =============================================================================
 
-Deno.test("factory: single char names work", () => {
+Deno.test("tnid: single char names work", () => {
   const A = Tnid("a");
   const id = A.new_v0();
   assertEquals(id.startsWith("a."), true);
@@ -146,7 +146,7 @@ Deno.test("factory: single char names work", () => {
   assertEquals(parsed, id);
 });
 
-Deno.test("factory: numeric names work", () => {
+Deno.test("tnid: numeric names work", () => {
   const Zero = Tnid("0");
   const Mixed = Tnid("a1b2");
 
@@ -160,7 +160,7 @@ Deno.test("factory: numeric names work", () => {
   assertEquals(Mixed.parse(idMixed), idMixed);
 });
 
-Deno.test("factory: max length name works", () => {
+Deno.test("tnid: max length name works", () => {
   const Abcd = Tnid("abcd");
   const id = Abcd.new_v0();
   assertEquals(id.startsWith("abcd."), true);
@@ -171,7 +171,7 @@ Deno.test("factory: max length name works", () => {
 // Utility Methods
 // =============================================================================
 
-Deno.test("factory: .toString() strips brand", () => {
+Deno.test("tnid: .toString() strips brand", () => {
   const UserId = Tnid("user");
   const id = UserId.new_v0();
 

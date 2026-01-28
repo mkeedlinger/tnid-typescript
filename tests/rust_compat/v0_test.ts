@@ -14,8 +14,8 @@ import {
 Deno.test("rust compat: V0 with zeros", async () => {
   const names = ["user", "test", "a", "abcd"];
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v0_from_parts(0n, 0n);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const ts = tnid.v0_from_parts(0n, 0n);
     const rust = await cliMakeV0(name, 0n, 0n);
     assertEquals(ts, rust, `V0 mismatch for name="${name}" ts=0 r=0`);
   }
@@ -31,8 +31,8 @@ Deno.test("rust compat: V0 with specific values", async () => {
   ];
 
   for (const [name, timestamp, random] of testCases) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v0_from_parts(timestamp, random);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const ts = tnid.v0_from_parts(timestamp, random);
     const rust = await cliMakeV0(name, timestamp, random);
     assertEquals(ts, rust, `V0 mismatch for name="${name}" ts=${timestamp} r=${random}`);
   }
@@ -46,8 +46,8 @@ Deno.test("rust compat: V0 with random values", async () => {
     const timestamp = randomTimestamp();
     const random = randomV0Random();
 
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const ts = factory.v0_from_parts(timestamp, random);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const ts = tnid.v0_from_parts(timestamp, random);
     const rust = await cliMakeV0(name, timestamp, random);
     assertEquals(ts, rust, `V0 random mismatch #${i}: name="${name}" ts=${timestamp} r=${random}`);
   }
@@ -57,9 +57,9 @@ Deno.test("rust compat: V0 parse round-trips", async () => {
   const names = ["user", "test", "a", "0"];
 
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const v0 = factory.v0_from_parts(randomTimestamp(), randomV0Random());
-    const parsed = factory.parse(v0);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const v0 = tnid.v0_from_parts(randomTimestamp(), randomV0Random());
+    const parsed = tnid.parse(v0);
     assertEquals(parsed, v0);
   }
 });

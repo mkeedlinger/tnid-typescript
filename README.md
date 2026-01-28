@@ -26,7 +26,7 @@ deno add npm:@tnid/core
 ```typescript
 import { DynamicTnid, Tnid, TnidType, UuidLike } from "@tnid/core";
 
-// Create a typed factory (compile-time name validation)
+// Create a typed NamedTnid (compile-time name validation)
 const UserId = Tnid("user");
 type UserId = TnidType<typeof UserId>;
 
@@ -54,6 +54,22 @@ const fromUuid: UserId = UserId.parseUuidString(uuid);
 - **UUID compatible**: Store in any UUID column, use with existing UUID tooling
 - **Time-ordered (V0)**: Sortable by creation time, like UUIDv7
 - **High-entropy (V1)**: Maximum randomness, like UUIDv4
+- **Just strings**: At runtime, TNIDs are plain strings. Use as Map keys, in
+  JSON, or compare with `===`
+
+```typescript
+const id = UserId.new_v0();
+
+// Use as Map key
+const cache = new Map<UserId, User>();
+cache.set(id, user);
+
+// JSON serialization works naturally
+JSON.stringify({ userId: id }); // {"userId":"user.Br2flcNDfF6LYICnT"}
+
+// String comparison
+id === otherUserId; // true/false
+```
 
 ---
 
@@ -66,7 +82,7 @@ import {
   Case, // "lower" | "upper"
   DynamicTnid, // Runtime TNID operations (type + namespace)
   Tnid, // Factory creator function
-  TnidFactory, // Factory interface
+  NamedTnid, // Named TNID interface
   TnidType, // Type helper to extract ID type from factory
   // Types only:
   TnidValue, // Branded string type
@@ -85,7 +101,7 @@ Creates a factory for TNIDs with a specific name. The name is validated at
 ```typescript
 const UserId = Tnid("user");
 const PostId = Tnid("post");
-const Item = Tnid("item");
+const ItemId = Tnid("item");
 ```
 
 #### Name Rules
@@ -111,15 +127,15 @@ Tnid(""); // ✗ empty not allowed
 
 ---
 
-### `TnidFactory<Name>` (returned by `Tnid()`)
+### `NamedTnid<Name>` (returned by `Tnid()`)
 
-The factory object returned by `Tnid(name)` has these methods:
+The object returned by `Tnid(name)` has these methods:
 
 #### Properties
 
 | Property | Type   | Description                                |
 | -------- | ------ | ------------------------------------------ |
-| `name`   | `Name` | The TNID name this factory creates IDs for |
+| `name`   | `Name` | The TNID name this creates IDs for |
 
 #### Generation Methods
 
@@ -167,7 +183,7 @@ UserId.toUuidString(id); // "d6157329-4640-8e30-8012-..."
 UserId.toUuidString(id, "upper"); // "D6157329-4640-8E30-8012-..."
 UserId.nameHex(); // "d6157"
 
-// Factory property
+// Property
 UserId.name; // "user"
 ```
 
@@ -175,7 +191,7 @@ UserId.name; // "user"
 
 ### `TnidType<Factory>`
 
-Type helper to extract the `TnidValue` type from a factory.
+Type helper to extract the `TnidValue` type from a `NamedTnid`.
 
 ```typescript
 const UserId = Tnid("user");
@@ -311,23 +327,6 @@ try {
 const upper = UuidLike.toUpperCase(uuid);
 // "D6157329-4640-8E30-8012-345678901234"
 ```
-
----
-
-## TNID Format
-
-A TNID string has two parts separated by a dot:
-
-```
-user.Br2flcNDfF6LYICnT
-^^^^  ^^^^^^^^^^^^^^^^^
-name  data (17 chars)
-```
-
-- **Name**: 1-4 characters (`0-4`, `a-z`)
-- **Data**: 17 characters using a custom 6-bit encoding (102 bits of data)
-
-Total length: 3-22 characters (name + dot + data)
 
 ---
 

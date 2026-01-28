@@ -20,8 +20,8 @@ Deno.test("rust compat: toUuidString matches Rust for V0", async () => {
   const names = ["user", "test", "a", "0", "zzzz"];
 
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v0_from_parts(randomTimestamp(), randomV0Random());
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v0_from_parts(randomTimestamp(), randomV0Random());
 
     const tsUuid = DynamicTnid.toUuidString(id);
     const rustInspect = await cliInspect(id);
@@ -34,8 +34,8 @@ Deno.test("rust compat: toUuidString matches Rust for V1", async () => {
   const names = ["user", "test", "a", "0", "zzzz"];
 
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v1_from_parts(randomV1Random());
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v1_from_parts(randomV1Random());
 
     const tsUuid = DynamicTnid.toUuidString(id);
     const rustInspect = await cliInspect(id);
@@ -45,8 +45,8 @@ Deno.test("rust compat: toUuidString matches Rust for V1", async () => {
 });
 
 Deno.test("rust compat: toUuidString uppercase matches Rust", async () => {
-  const factory = Tnid("user");
-  const id = factory.v0_from_parts(randomTimestamp(), randomV0Random());
+  const UserId = Tnid("user");
+  const id = UserId.v0_from_parts(randomTimestamp(), randomV0Random());
 
   const tsUuidLower = DynamicTnid.toUuidString(id, "lower");
   const tsUuidUpper = DynamicTnid.toUuidString(id, "upper");
@@ -65,8 +65,8 @@ Deno.test("rust compat: getVariant matches Rust for V0", async () => {
 
   for (let i = 0; i < iterations; i++) {
     const name = randomName();
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v0_from_parts(randomTimestamp(), randomV0Random());
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v0_from_parts(randomTimestamp(), randomV0Random());
 
     const tsVariant = DynamicTnid.getVariant(id);
     const rustInspect = await cliInspect(id);
@@ -81,8 +81,8 @@ Deno.test("rust compat: getVariant matches Rust for V1", async () => {
 
   for (let i = 0; i < iterations; i++) {
     const name = randomName();
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v1_from_parts(randomV1Random());
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v1_from_parts(randomV1Random());
 
     const tsVariant = DynamicTnid.getVariant(id);
     const rustInspect = await cliInspect(id);
@@ -100,8 +100,8 @@ Deno.test("rust compat: getName matches Rust", async () => {
   const names = ["user", "test", "a", "ab", "abc", "abcd", "0", "1234", "z", "zzzz", "a1b2"];
 
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v0_from_parts(randomTimestamp(), randomV0Random());
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v0_from_parts(randomTimestamp(), randomV0Random());
 
     const tsName = DynamicTnid.getName(id);
     const rustInspect = await cliInspect(id);
@@ -118,8 +118,8 @@ Deno.test("rust compat: getNameHex matches Rust", async () => {
   const names = ["user", "test", "a", "ab", "abc", "abcd", "0", "1234", "z", "zzzz"];
 
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v0_from_parts(0n, 0n);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v0_from_parts(0n, 0n);
 
     const tsNameHex = DynamicTnid.getNameHex(id);
     const rustInspect = await cliInspect(id);
@@ -128,17 +128,17 @@ Deno.test("rust compat: getNameHex matches Rust", async () => {
   }
 });
 
-Deno.test("rust compat: factory.nameHex matches Rust", async () => {
+Deno.test("rust compat: tnid.nameHex matches Rust", async () => {
   const names = ["user", "test", "a", "abcd", "0", "zzzz"];
 
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v0_from_parts(0n, 0n);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v0_from_parts(0n, 0n);
 
-    const tsNameHex = factory.nameHex();
+    const tsNameHex = tnid.nameHex();
     const rustInspect = await cliInspect(id);
 
-    assertEquals(tsNameHex, rustInspect.nameHex, `Factory nameHex mismatch for ${name}`);
+    assertEquals(tsNameHex, rustInspect.nameHex, `nameHex mismatch for ${name}`);
   }
 });
 
@@ -151,18 +151,18 @@ Deno.test("rust compat: UUID round-trip preserves TNID", async () => {
 
   for (let i = 0; i < iterations; i++) {
     const name = randomName();
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
 
     // V0
-    const v0 = factory.v0_from_parts(randomTimestamp(), randomV0Random());
+    const v0 = tnid.v0_from_parts(randomTimestamp(), randomV0Random());
     const v0Uuid = UuidLike.fromTnid(v0);
-    const v0Back = factory.parseUuidString(v0Uuid);
+    const v0Back = tnid.parseUuidString(v0Uuid);
     assertEquals(v0Back, v0, `V0 UUID round-trip failed for ${name}`);
 
     // V1
-    const v1 = factory.v1_from_parts(randomV1Random());
+    const v1 = tnid.v1_from_parts(randomV1Random());
     const v1Uuid = UuidLike.fromTnid(v1);
-    const v1Back = factory.parseUuidString(v1Uuid);
+    const v1Back = tnid.parseUuidString(v1Uuid);
     assertEquals(v1Back, v1, `V1 UUID round-trip failed for ${name}`);
   }
 });
@@ -172,7 +172,7 @@ Deno.test("rust compat: UUID round-trip preserves TNID", async () => {
 // =============================================================================
 
 Deno.test("rust compat: boundary timestamp values", async () => {
-  const factory = Tnid("user");
+  const UserId = Tnid("user");
   const timestamps = [
     0n,
     1n,
@@ -183,7 +183,7 @@ Deno.test("rust compat: boundary timestamp values", async () => {
   ];
 
   for (const ts of timestamps) {
-    const id = factory.v0_from_parts(BigInt(ts), 0n);
+    const id = UserId.v0_from_parts(BigInt(ts), 0n);
     const rustInspect = await cliInspect(id);
 
     assertEquals(DynamicTnid.getVariant(id), rustInspect.variant.toLowerCase());
@@ -193,7 +193,7 @@ Deno.test("rust compat: boundary timestamp values", async () => {
 });
 
 Deno.test("rust compat: boundary random values for V0", async () => {
-  const factory = Tnid("user");
+  const UserId = Tnid("user");
   const randoms = [
     0n,
     1n,
@@ -202,7 +202,7 @@ Deno.test("rust compat: boundary random values for V0", async () => {
   ];
 
   for (const r of randoms) {
-    const id = factory.v0_from_parts(1000n, r);
+    const id = UserId.v0_from_parts(1000n, r);
     const rustInspect = await cliInspect(id);
 
     assertEquals(DynamicTnid.getVariant(id), rustInspect.variant.toLowerCase());
@@ -211,7 +211,7 @@ Deno.test("rust compat: boundary random values for V0", async () => {
 });
 
 Deno.test("rust compat: boundary random values for V1", async () => {
-  const factory = Tnid("user");
+  const UserId = Tnid("user");
   const randoms = [
     0n,
     1n,
@@ -220,7 +220,7 @@ Deno.test("rust compat: boundary random values for V1", async () => {
   ];
 
   for (const r of randoms) {
-    const id = factory.v1_from_parts(r);
+    const id = UserId.v1_from_parts(r);
     const rustInspect = await cliInspect(id);
 
     assertEquals(DynamicTnid.getVariant(id), rustInspect.variant.toLowerCase());

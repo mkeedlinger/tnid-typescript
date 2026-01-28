@@ -13,8 +13,8 @@ Deno.test("rust compat: name encoding matches for sample names", async () => {
   const names = ["user", "test", "a", "abcd", "0", "1234", "z", "zzzz"];
 
   for (const name of names) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const id = factory.v0_from_parts(0n, 0n);
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const id = tnid.v0_from_parts(0n, 0n);
     const rustId = await cliMakeV0(name, 0n, 0n);
     assertEquals(id, rustId, `Name encoding mismatch for "${name}"`);
   }
@@ -22,14 +22,14 @@ Deno.test("rust compat: name encoding matches for sample names", async () => {
 
 Deno.test("rust compat: all 31 single-char names encode correctly", async () => {
   for (const char of ALL_VALID_CHARS) {
-    const factory = Tnid(char as Parameters<typeof Tnid>[0]);
-    const tsHex = factory.nameHex();
+    const tnid = Tnid(char as Parameters<typeof Tnid>[0]);
+    const tsHex = tnid.nameHex();
     const rustHex = await cliEncodeName(char);
 
     assertEquals(tsHex, rustHex, `Name hex mismatch for single char "${char}"`);
 
     // Also verify generation matches
-    const id = factory.v0_from_parts(0n, 0n);
+    const id = tnid.v0_from_parts(0n, 0n);
     const rustId = await cliMakeV0(char, 0n, 0n);
     assertEquals(id, rustId, `Generation mismatch for single char "${char}"`);
   }
@@ -45,8 +45,8 @@ Deno.test("rust compat: two-char name combinations", async () => {
   ];
 
   for (const name of twoCharNames) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const tsHex = factory.nameHex();
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const tsHex = tnid.nameHex();
     const rustHex = await cliEncodeName(name);
 
     assertEquals(tsHex, rustHex, `Name hex mismatch for "${name}"`);
@@ -62,13 +62,13 @@ Deno.test("rust compat: max length (4-char) names", async () => {
   ];
 
   for (const name of fourCharNames) {
-    const factory = Tnid(name as Parameters<typeof Tnid>[0]);
-    const tsHex = factory.nameHex();
+    const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
+    const tsHex = tnid.nameHex();
     const rustHex = await cliEncodeName(name);
 
     assertEquals(tsHex, rustHex, `Name hex mismatch for "${name}"`);
 
-    const id = factory.v0_from_parts(0n, 0n);
+    const id = tnid.v0_from_parts(0n, 0n);
     const rustId = await cliMakeV0(name, 0n, 0n);
     assertEquals(id, rustId, `Generation mismatch for "${name}"`);
   }

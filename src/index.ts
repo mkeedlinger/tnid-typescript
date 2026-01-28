@@ -7,7 +7,7 @@ export type {
   TnidValue,
   TnidVariant,
   Case,
-  TnidFactory,
+  NamedTnid,
   TnidType,
 } from "./types.ts";
 
@@ -17,5 +17,5 @@ export { DynamicTnid } from "./dynamic.ts";
 // UuidLike (type + namespace merged in uuidlike.ts)
 export { UuidLike } from "./uuidlike.ts";
 
-// Factory function
+// Tnid function
 export { Tnid } from "./factory.ts";

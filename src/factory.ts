@@ -1,10 +1,10 @@
 // =============================================================================
-// Tnid Factory Function
+// Tnid Function
 // =============================================================================
 
 import type {
   Case,
-  TnidFactory,
+  NamedTnid,
   TnidValue,
   TnidVariant,
   ValidateName,
@@ -22,7 +22,7 @@ import {
 import { getTnidVariantImpl, toUuidStringImpl } from "./dynamic.ts";
 
 /**
- * Create a TNID factory for the given name.
+ * Create a NamedTnid for the given name.
  *
  * The name is validated at **compile time** - only 1-4 characters using `0-4` and `a-z`.
  * Invalid names will produce a TypeScript error.
@@ -47,7 +47,7 @@ import { getTnidVariantImpl, toUuidStringImpl } from "./dynamic.ts";
  */
 export function Tnid<const Name extends string>(
   name: ValidateName<Name>,
-): TnidFactory<Name> {
+): NamedTnid<Name> {
   // Runtime validation (belt and suspenders)
   if (!isValidNameRuntime(name)) {
     throw new Error(
@@ -57,7 +57,7 @@ export function Tnid<const Name extends string>(
 
   const nameBits = encodeName(name);
 
-  const factory: TnidFactory<Name> = {
+  const tnid: NamedTnid<Name> = {
     name: name as Name,
 
     new_v0(): TnidValue<Name> {
@@ -148,5 +148,5 @@ export function Tnid<const Name extends string>(
     },
   };
 
-  return factory;
+  return tnid;
 }

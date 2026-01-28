@@ -73,7 +73,7 @@ export type ValidateName<S extends string> = ValidateNameChars<S> extends true
  *
  * @example
  * ```ts
- * // Define a factory and matching type
+ * // Define a NamedTnid and matching type
  * const UserId = Tnid("user");
  * type UserId = TnidType<typeof UserId>;
  *
@@ -118,11 +118,11 @@ export type TnidVariant = "v0" | "v1" | "v2" | "v3";
 export type Case = "lower" | "upper";
 
 // -----------------------------------------------------------------------------
-// Factory Interface
+// NamedTnid Interface
 // -----------------------------------------------------------------------------
 
-export interface TnidFactory<Name extends string> {
-  /** The TNID name this factory creates IDs for */
+export interface NamedTnid<Name extends string> {
+  /** The TNID name */
   readonly name: Name;
 
   /** Generate a new time-sortable TNID (variant 0) */
@@ -160,5 +160,5 @@ export interface TnidFactory<Name extends string> {
   toUuidString(id: TnidValue<Name>, caseFormat?: Case): string;
 }
 
-/** Extract the `TnidValue` type from a factory. */
-export type TnidType<F> = F extends TnidFactory<infer N> ? TnidValue<N> : never;
+/** Extract the `TnidValue` type from a NamedTnid. */
+export type TnidType<T> = T extends NamedTnid<infer N> ? TnidValue<N> : never;
