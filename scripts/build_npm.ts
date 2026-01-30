@@ -53,6 +53,17 @@ const packages: PackageConfig[] = [
     // Mappings are computed below with resolved paths
     skipNpmInstall: true,
   },
+  {
+    name: "@tnid/wasm",
+    dir: "wasm",
+    entryPoints: "./packages/wasm/src/index.ts",
+    description:
+      "WebAssembly implementation of TNID - high-performance ID generation compiled from Rust",
+    readme: "./packages/wasm/README.md",
+    importMap: "./packages/wasm/deno.json",
+    dependencies: { "@tnid/core": `^${VERSION}` },
+    skipNpmInstall: true,
+  },
 ];
 
 console.log(`Building TNID packages v${VERSION}\n`);
@@ -84,15 +95,21 @@ for (const pkg of packages) {
       [coreIndex]: { name: "@tnid/core", version: `^${VERSION}` },
       [coreUuid]: { name: "@tnid/core", version: `^${VERSION}`, subPath: "uuid" },
     };
+  } else if (pkg.name === "@tnid/wasm") {
+    // wasm only imports from @tnid/core main export, not uuid
+    const coreIndex = toFileUrl(Deno.realPathSync("./packages/core/src/index.ts")).href;
+    mappings = {
+      [coreIndex]: { name: "@tnid/core", version: `^${VERSION}` },
+    };
+  }
 
-    // Create node_modules/@tnid/core symlink to local core build for type checking
-    // This must be done before build() since we're skipping npm install
+  // Create node_modules/@tnid/core symlink for packages that depend on core
+  if (pkg.name === "@tnid/encryption" || pkg.name === "@tnid/wasm") {
     const nodeModulesPath = `./npm/${pkg.dir}/node_modules/@tnid`;
     await Deno.mkdir(nodeModulesPath, { recursive: true });
     try {
       await Deno.remove(`${nodeModulesPath}/core`, { recursive: true });
     } catch { /* ignore if doesn't exist */ }
-    // Use absolute path for the symlink target
     const coreBuildPath = Deno.realPathSync("./npm/core");
     await Deno.symlink(coreBuildPath, `${nodeModulesPath}/core`);
     console.log(`  Linked @tnid/core from ${coreBuildPath}`);
@@ -110,9 +127,17 @@ for (const pkg of packages) {
       lib: ["ESNext", "DOM"],
     },
     filterDiagnostic(diagnostic) {
-      // Ignore diagnostics from test files
       const file = diagnostic.file?.fileName;
+      // Ignore diagnostics from test files
       if (file && (file.includes("/tests/") || file.includes("_test.ts"))) {
+        return false;
+      }
+      // Ignore diagnostics from dnt polyfills
+      if (file && file.includes("_dnt.polyfills.ts")) {
+        return false;
+      }
+      // For wasm package: ignore node module resolution errors (dynamic imports)
+      if (pkg.name === "@tnid/wasm" && diagnostic.code === 2307) {
         return false;
       }
       return true;
@@ -146,7 +171,7 @@ for (const pkg of packages) {
       },
       dependencies: pkg.dependencies || {},
     },
-    postBuild() {
+    async postBuild() {
       // Copy LICENSE
       try {
         Deno.copyFileSync("LICENSE.txt", `npm/${pkg.dir}/LICENSE`);
@@ -159,6 +184,31 @@ for (const pkg of packages) {
         Deno.copyFileSync(pkg.readme, `npm/${pkg.dir}/README.md`);
       } catch {
         console.warn(`  Warning: ${pkg.readme} not found, skipping`);
+      }
+
+      // For wasm package: copy pkg/ directory to both esm/ and script/
+      if (pkg.name === "@tnid/wasm") {
+        const wasmPkgSrc = "./packages/wasm/pkg";
+
+        // Copy to esm/pkg/ (for ESM imports)
+        const wasmPkgDstEsm = `./npm/${pkg.dir}/esm/pkg`;
+        await Deno.mkdir(wasmPkgDstEsm, { recursive: true });
+        for await (const entry of Deno.readDir(wasmPkgSrc)) {
+          if (entry.isFile) {
+            await Deno.copyFile(`${wasmPkgSrc}/${entry.name}`, `${wasmPkgDstEsm}/${entry.name}`);
+          }
+        }
+        console.log(`  Copied WASM pkg/ to ${wasmPkgDstEsm}`);
+
+        // Copy to script/pkg/ (for CommonJS imports)
+        const wasmPkgDstScript = `./npm/${pkg.dir}/script/pkg`;
+        await Deno.mkdir(wasmPkgDstScript, { recursive: true });
+        for await (const entry of Deno.readDir(wasmPkgSrc)) {
+          if (entry.isFile) {
+            await Deno.copyFile(`${wasmPkgSrc}/${entry.name}`, `${wasmPkgDstScript}/${entry.name}`);
+          }
+        }
+        console.log(`  Copied WASM pkg/ to ${wasmPkgDstScript}`);
       }
     },
   });

@@ -94,6 +94,7 @@ import {
   TnidValue, // Branded string type
   TnidVariant, // "v0" | "v1" | "v2" | "v3"
   UuidLike, // UUID string operations (type + namespace)
+  ValidateName, // Compile-time name validation (for library authors)
 } from "@tnid/core";
 ```
 

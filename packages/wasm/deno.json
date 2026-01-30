@@ -1,0 +1,9 @@
+{
+  "name": "@tnid/wasm",
+  "imports": {
+    "@tnid/core": "../core/src/index.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

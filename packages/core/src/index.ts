@@ -9,6 +9,7 @@ export type {
   Case,
   NamedTnid,
   TnidType,
+  ValidateName,
 } from "./types.ts";
 
 // DynamicTnid (type + namespace merged in dynamic.ts)
