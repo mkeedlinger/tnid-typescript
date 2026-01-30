@@ -21,8 +21,7 @@ interface PackageConfig {
   description: string;
   readme: string;
   dependencies?: Record<string, string>;
-  peerDependencies?: Record<string, string>;
-  mappings?: Record<string, { name: string; version: string; subPath?: string }>;
+  mappings?: Record<string, { name: string; version: string; subPath?: string; peerDependency?: boolean }>;
   // Skip npm install for packages with local dependencies not yet published
   skipNpmInstall?: boolean;
   // Import map for resolving package imports
@@ -50,8 +49,7 @@ const packages: PackageConfig[] = [
       "Format-preserving encryption for TNIDs - convert time-ordered IDs to random-looking IDs",
     readme: "./packages/encryption/README.md",
     importMap: "./packages/encryption/deno.json",
-    peerDependencies: { "@tnid/core": `^${VERSION}` },
-    // Mappings are computed below with resolved paths
+    // peerDependencies handled via mappings with peerDependency: true
     skipNpmInstall: true,
   },
   {
@@ -62,7 +60,7 @@ const packages: PackageConfig[] = [
       "WebAssembly implementation of TNID - high-performance ID generation compiled from Rust",
     readme: "./packages/wasm/README.md",
     importMap: "./packages/wasm/deno.json",
-    peerDependencies: { "@tnid/core": `^${VERSION}` },
+    // peerDependencies handled via mappings with peerDependency: true
     skipNpmInstall: true,
   },
 ];
@@ -93,14 +91,14 @@ for (const pkg of packages) {
     const coreIndex = toFileUrl(Deno.realPathSync("./packages/core/src/index.ts")).href;
     const coreUuid = toFileUrl(Deno.realPathSync("./packages/core/src/uuid.ts")).href;
     mappings = {
-      [coreIndex]: { name: "@tnid/core", version: `^${VERSION}` },
-      [coreUuid]: { name: "@tnid/core", version: `^${VERSION}`, subPath: "uuid" },
+      [coreIndex]: { name: "@tnid/core", version: `^${VERSION}`, peerDependency: true },
+      [coreUuid]: { name: "@tnid/core", version: `^${VERSION}`, subPath: "uuid", peerDependency: true },
     };
   } else if (pkg.name === "@tnid/wasm") {
     // wasm only imports from @tnid/core main export, not uuid
     const coreIndex = toFileUrl(Deno.realPathSync("./packages/core/src/index.ts")).href;
     mappings = {
-      [coreIndex]: { name: "@tnid/core", version: `^${VERSION}` },
+      [coreIndex]: { name: "@tnid/core", version: `^${VERSION}`, peerDependency: true },
     };
   }
 
@@ -171,7 +169,6 @@ for (const pkg of packages) {
         node: ">=20",
       },
       dependencies: pkg.dependencies || {},
-      peerDependencies: pkg.peerDependencies || {},
     },
     async postBuild() {
       // Copy LICENSE
