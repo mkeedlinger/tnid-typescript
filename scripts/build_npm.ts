@@ -196,7 +196,8 @@ for (const pkg of packages) {
         const wasmPkgDstEsm = `./npm/${pkg.dir}/esm/pkg`;
         await Deno.mkdir(wasmPkgDstEsm, { recursive: true });
         for await (const entry of Deno.readDir(wasmPkgSrc)) {
-          if (entry.isFile) {
+          // Skip .gitignore - it contains "*" which excludes everything when npm packs
+          if (entry.isFile && entry.name !== ".gitignore") {
             await Deno.copyFile(`${wasmPkgSrc}/${entry.name}`, `${wasmPkgDstEsm}/${entry.name}`);
           }
         }
@@ -206,7 +207,8 @@ for (const pkg of packages) {
         const wasmPkgDstScript = `./npm/${pkg.dir}/script/pkg`;
         await Deno.mkdir(wasmPkgDstScript, { recursive: true });
         for await (const entry of Deno.readDir(wasmPkgSrc)) {
-          if (entry.isFile) {
+          // Skip .gitignore - it contains "*" which excludes everything when npm packs
+          if (entry.isFile && entry.name !== ".gitignore") {
             await Deno.copyFile(`${wasmPkgSrc}/${entry.name}`, `${wasmPkgDstScript}/${entry.name}`);
           }
         }
