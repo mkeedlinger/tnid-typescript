@@ -18,7 +18,9 @@
     "example": "deno run packages/core/examples/basic.ts",
     "example:core": "deno run packages/core/examples/basic.ts",
     "example:encryption": "deno run packages/encryption/examples/basic.ts",
+    "build:wasm": "cd packages/wasm/rust && wasm-pack build --target web --out-dir ../pkg",
     "build": "deno run -A scripts/build_npm.ts",
+    "build:all": "deno task build:wasm && deno task build",
     "check": "deno check packages/*/src/**/*.ts"
   }
 }

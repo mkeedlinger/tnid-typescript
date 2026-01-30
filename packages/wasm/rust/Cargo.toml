@@ -1,0 +1,17 @@
+[package]
+name = "tnid-wasm"
+version = "0.0.1"
+edition = "2024"
+description = "WebAssembly bindings for TNID"
+license = "MIT"
+repository = "https://github.com/mkeedlinger/tnid-typescript"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+tnid = { version = "0.0.8", default-features = false, features = ["encryption"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
