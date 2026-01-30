@@ -120,23 +120,25 @@ function parseDynamicUuidStringImpl(uuid: string): DynamicTnid {
 /** Interface for DynamicTnid static methods. */
 export interface DynamicTnidNamespace {
   /** Generate a new time-sortable TNID (variant 0) with runtime name validation. */
-  new_v0(name: string): DynamicTnid;
-  /** Alias for new_v0. */
-  new_time_ordered(name: string): DynamicTnid;
+  newV0(name: string): DynamicTnid;
+  /** Alias for newV0. */
+  newTimeOrdered(name: string): DynamicTnid;
   /** Generate a new time-sortable TNID with a specific timestamp. */
-  new_v0_with_time(name: string, time: Date): DynamicTnid;
+  newV0WithTime(name: string, time: Date): DynamicTnid;
   /** Generate a new time-sortable TNID with explicit timestamp and random components. */
-  new_v0_with_parts(name: string, epochMillis: bigint, random: bigint): DynamicTnid;
+  newV0WithParts(name: string, epochMillis: bigint, random: bigint): DynamicTnid;
   /** Generate a new high-entropy TNID (variant 1) with runtime name validation. */
-  new_v1(name: string): DynamicTnid;
-  /** Alias for new_v1. */
-  new_high_entropy(name: string): DynamicTnid;
+  newV1(name: string): DynamicTnid;
+  /** Alias for newV1. */
+  newHighEntropy(name: string): DynamicTnid;
   /** Generate a new high-entropy TNID with explicit random bits. */
-  new_v1_with_random(name: string, randomBits: bigint): DynamicTnid;
-  /** Parse any valid TNID string. */
+  newV1WithRandom(name: string, randomBits: bigint): DynamicTnid;
+  /** Parse a TNID from either TNID string format or UUID hex format (auto-detected). */
   parse(s: string): DynamicTnid;
+  /** Parse a TNID string (e.g., "user.Br2flcNDfF6LYICnT"). */
+  parseTnidString(s: string): DynamicTnid;
   /** Parse a UUID hex string into a DynamicTnid (validates TNID structure). */
-  parse_uuid_string(uuid: string): DynamicTnid;
+  parseUuidString(uuid: string): DynamicTnid;
   /** Get the name from a TNID. */
   getName(id: DynamicTnid): string;
   /** Get the name encoded as a 5-character hex string. */
@@ -150,7 +152,7 @@ export interface DynamicTnidNamespace {
 /** Static methods for working with any TNID regardless of name. */
 export const DynamicTnid: DynamicTnidNamespace = {
   /** Generate a new time-sortable TNID (variant 0) with runtime name validation. */
-  new_v0(name: string): DynamicTnid {
+  newV0(name: string): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
         `Invalid TNID name: "${name}". Must be 1-4 characters of: 0-4, a-z`,
@@ -162,13 +164,13 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Alias for new_v0. */
-  new_time_ordered(name: string): DynamicTnid {
-    return DynamicTnid.new_v0(name);
+  /** Alias for newV0. */
+  newTimeOrdered(name: string): DynamicTnid {
+    return DynamicTnid.newV0(name);
   },
 
   /** Generate a new time-sortable TNID with a specific timestamp. */
-  new_v0_with_time(name: string, time: Date): DynamicTnid {
+  newV0WithTime(name: string, time: Date): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
         `Invalid TNID name: "${name}". Must be 1-4 characters of: 0-4, a-z`,
@@ -182,7 +184,7 @@ export const DynamicTnid: DynamicTnidNamespace = {
   },
 
   /** Generate a new time-sortable TNID with explicit timestamp and random components. */
-  new_v0_with_parts(
+  newV0WithParts(
     name: string,
     epochMillis: bigint,
     random: bigint,
@@ -199,7 +201,7 @@ export const DynamicTnid: DynamicTnidNamespace = {
   },
 
   /** Generate a new high-entropy TNID (variant 1) with runtime name validation. */
-  new_v1(name: string): DynamicTnid {
+  newV1(name: string): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
         `Invalid TNID name: "${name}". Must be 1-4 characters of: 0-4, a-z`,
@@ -211,13 +213,13 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Alias for new_v1. */
-  new_high_entropy(name: string): DynamicTnid {
-    return DynamicTnid.new_v1(name);
+  /** Alias for newV1. */
+  newHighEntropy(name: string): DynamicTnid {
+    return DynamicTnid.newV1(name);
   },
 
   /** Generate a new high-entropy TNID with explicit random bits. */
-  new_v1_with_random(name: string, randomBits: bigint): DynamicTnid {
+  newV1WithRandom(name: string, randomBits: bigint): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
         `Invalid TNID name: "${name}". Must be 1-4 characters of: 0-4, a-z`,
@@ -229,13 +231,27 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Parse any valid TNID string. */
+  /** Parse a TNID from either TNID string format or UUID hex format (auto-detected). */
   parse(s: string): DynamicTnid {
+    // Detect format by length: TNID strings are 19-22 chars with '.', UUIDs are 36 chars
+    if (s.length >= 19 && s.length <= 22 && s.includes(".")) {
+      return parseDynamicTnidImpl(s);
+    } else if (s.length === 36) {
+      return parseDynamicUuidStringImpl(s);
+    } else {
+      throw new Error(
+        `Invalid TNID: expected TNID string (19-22 chars) or UUID (36 chars), got ${s.length} chars`,
+      );
+    }
+  },
+
+  /** Parse a TNID string (e.g., "user.Br2flcNDfF6LYICnT"). */
+  parseTnidString(s: string): DynamicTnid {
     return parseDynamicTnidImpl(s);
   },
 
   /** Parse a UUID hex string into a DynamicTnid (validates TNID structure). */
-  parse_uuid_string(uuid: string): DynamicTnid {
+  parseUuidString(uuid: string): DynamicTnid {
     return parseDynamicUuidStringImpl(uuid);
   },
 

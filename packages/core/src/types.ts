@@ -81,14 +81,18 @@ export type ValidateName<S extends string> = ValidateNameChars<S> extends true
  * const id: UserId = UserId.new_v0();          // time-sortable
  * const id2: UserId = UserId.new_v1();         // high-entropy random
  *
- * // Parse from strings
- * const parsed = UserId.parse("user.abc...");  // validates name matches
- * const fromUuid = UserId.parseUuidString("d6157329-4640-8e30-...");
+ * // Parse from strings (auto-detects format)
+ * const parsed = UserId.parse("user.abc...");  // TNID string format
+ * const fromUuid = UserId.parse("d6157329-4640-8e30-...");  // UUID format
+ *
+ * // Or use explicit parse methods
+ * UserId.parseTnidString("user.abc...");       // TNID string only
+ * UserId.parseUuidString("d6157329-...");      // UUID string only
  *
  * // DynamicTnid - runtime name validation
- * DynamicTnid.new_v0("item");                  // create with runtime name
- * DynamicTnid.new_v1("item");                  // create with runtime name
- * DynamicTnid.parse("post.xyz...");            // parse any TNID
+ * DynamicTnid.newV0("item");                   // create with runtime name
+ * DynamicTnid.newV1("item");                   // create with runtime name
+ * DynamicTnid.parse("post.xyz...");            // parse any TNID (auto-detects)
  * DynamicTnid.getName(id);                     // "user"
  * DynamicTnid.getVariant(id);                  // "v0" | "v1" | "v2" | "v3"
  *
@@ -138,10 +142,16 @@ export interface NamedTnid<Name extends string> {
   v1_from_parts(randomBits: bigint): TnidValue<Name>;
 
   /**
-   * Parse and validate a TNID string.
+   * Parse a TNID from either TNID string format or UUID hex format (auto-detected).
    * @throws Error if the string is invalid or the name doesn't match
    */
   parse(s: string): TnidValue<Name>;
+
+  /**
+   * Parse and validate a TNID string (e.g., "user.Br2flcNDfF6LYICnT").
+   * @throws Error if the string is invalid or the name doesn't match
+   */
+  parseTnidString(s: string): TnidValue<Name>;
 
   /**
    * Parse a UUID hex string into a TNID.

@@ -73,45 +73,55 @@ Deno.test("dynamic: parse parses any valid TNID", () => {
 });
 
 Deno.test("dynamic: parse rejects invalid strings", () => {
+  // Wrong length - rejected before format detection
   assertThrows(
     () => DynamicTnid.parse("invalid"),
     Error,
-    "missing '.' separator"
+    "expected TNID string (19-22 chars) or UUID (36 chars)"
   );
 
+  // Valid TNID length (22 chars) with dot, but invalid name (uppercase)
   assertThrows(
-    () => DynamicTnid.parse("UPPER.12345678901234567"),
+    () => DynamicTnid.parse("UPPR.1234567890123456-"),
     Error,
     "Invalid TNID name"
   );
 });
 
+Deno.test("dynamic: parseTnidString rejects missing separator", () => {
+  assertThrows(
+    () => DynamicTnid.parseTnidString("invalid"),
+    Error,
+    "missing '.' separator"
+  );
+});
+
 // =============================================================================
-// DynamicTnid.new_v0 / new_v1
+// DynamicTnid.newV0 / newV1
 // =============================================================================
 
-Deno.test("dynamic: new_v0 creates valid TNID", () => {
-  const id = DynamicTnid.new_v0("user");
+Deno.test("dynamic: newV0 creates valid TNID", () => {
+  const id = DynamicTnid.newV0("user");
 
   assertEquals(DynamicTnid.getName(id), "user");
   assertEquals(DynamicTnid.getVariant(id), "v0");
 });
 
-Deno.test("dynamic: new_v1 creates valid TNID", () => {
-  const id = DynamicTnid.new_v1("post");
+Deno.test("dynamic: newV1 creates valid TNID", () => {
+  const id = DynamicTnid.newV1("post");
 
   assertEquals(DynamicTnid.getName(id), "post");
   assertEquals(DynamicTnid.getVariant(id), "v1");
 });
 
-Deno.test("dynamic: new_v0 rejects invalid names", () => {
-  assertThrows(() => DynamicTnid.new_v0(""), Error, "Invalid TNID name");
-  assertThrows(() => DynamicTnid.new_v0("users"), Error, "Invalid TNID name");
-  assertThrows(() => DynamicTnid.new_v0("User"), Error, "Invalid TNID name");
-  assertThrows(() => DynamicTnid.new_v0("a-b"), Error, "Invalid TNID name");
+Deno.test("dynamic: newV0 rejects invalid names", () => {
+  assertThrows(() => DynamicTnid.newV0(""), Error, "Invalid TNID name");
+  assertThrows(() => DynamicTnid.newV0("users"), Error, "Invalid TNID name");
+  assertThrows(() => DynamicTnid.newV0("User"), Error, "Invalid TNID name");
+  assertThrows(() => DynamicTnid.newV0("a-b"), Error, "Invalid TNID name");
 });
 
-Deno.test("dynamic: new_v1 rejects invalid names", () => {
-  assertThrows(() => DynamicTnid.new_v1(""), Error, "Invalid TNID name");
-  assertThrows(() => DynamicTnid.new_v1("users"), Error, "Invalid TNID name");
+Deno.test("dynamic: newV1 rejects invalid names", () => {
+  assertThrows(() => DynamicTnid.newV1(""), Error, "Invalid TNID name");
+  assertThrows(() => DynamicTnid.newV1("users"), Error, "Invalid TNID name");
 });

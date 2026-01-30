@@ -10,13 +10,13 @@ import type {
   ValidateName,
 } from "./types.ts";
 import type { DynamicTnid } from "./dynamic.ts";
-import { encodeName, decodeName, isValidNameRuntime } from "./name_encoding.ts";
-import { encodeData, decodeData, dataBitsToBytes } from "./data_encoding.ts";
+import { decodeName, encodeName, isValidNameRuntime } from "./name_encoding.ts";
+import { dataBitsToBytes, decodeData, encodeData } from "./data_encoding.ts";
 import { generateV0, generateV1 } from "./bits.ts";
 import {
+  extractNameBitsFromValue,
   parseUuidStringToValue,
   validateUuidBits,
-  extractNameBitsFromValue,
   valueToTnidString,
 } from "./uuid.ts";
 import { getTnidVariantImpl, toUuidStringImpl } from "./dynamic.ts";
@@ -85,6 +85,19 @@ export function Tnid<const Name extends string>(
     },
 
     parse(s: string): TnidValue<Name> {
+      // Detect format by length: TNID strings are 19-22 chars with '.', UUIDs are 36 chars
+      if (s.length >= 19 && s.length <= 22 && s.includes(".")) {
+        return tnid.parseTnidString(s);
+      } else if (s.length === 36) {
+        return tnid.parseUuidString(s);
+      } else {
+        throw new Error(
+          `Invalid TNID: expected TNID string (19-22 chars) or UUID (36 chars), got ${s.length} chars`,
+        );
+      }
+    },
+
+    parseTnidString(s: string): TnidValue<Name> {
       const dotIndex = s.indexOf(".");
       if (dotIndex === -1) {
         throw new Error(`Invalid TNID string: missing '.' separator`);

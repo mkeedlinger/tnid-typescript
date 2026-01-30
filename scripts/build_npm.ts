@@ -21,6 +21,7 @@ interface PackageConfig {
   description: string;
   readme: string;
   dependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
   mappings?: Record<string, { name: string; version: string; subPath?: string }>;
   // Skip npm install for packages with local dependencies not yet published
   skipNpmInstall?: boolean;
@@ -49,7 +50,7 @@ const packages: PackageConfig[] = [
       "Format-preserving encryption for TNIDs - convert time-ordered IDs to random-looking IDs",
     readme: "./packages/encryption/README.md",
     importMap: "./packages/encryption/deno.json",
-    dependencies: { "@tnid/core": `^${VERSION}` },
+    peerDependencies: { "@tnid/core": `^${VERSION}` },
     // Mappings are computed below with resolved paths
     skipNpmInstall: true,
   },
@@ -61,7 +62,7 @@ const packages: PackageConfig[] = [
       "WebAssembly implementation of TNID - high-performance ID generation compiled from Rust",
     readme: "./packages/wasm/README.md",
     importMap: "./packages/wasm/deno.json",
-    dependencies: { "@tnid/core": `^${VERSION}` },
+    peerDependencies: { "@tnid/core": `^${VERSION}` },
     skipNpmInstall: true,
   },
 ];
@@ -150,10 +151,10 @@ for (const pkg of packages) {
       license: LICENSE,
       repository: {
         type: "git",
-        url: "git+https://github.com/tnid/tnid-typescript.git",
+        url: "git+https://github.com/mkeedlinger/tnid-typescript.git",
       },
       bugs: {
-        url: "https://github.com/tnid/tnid-typescript/issues",
+        url: "https://github.com/mkeedlinger/tnid-typescript/issues",
       },
       keywords: [
         "uuid",
@@ -170,6 +171,7 @@ for (const pkg of packages) {
         node: ">=20",
       },
       dependencies: pkg.dependencies || {},
+      peerDependencies: pkg.peerDependencies || {},
     },
     async postBuild() {
       // Copy LICENSE

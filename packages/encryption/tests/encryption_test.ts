@@ -164,11 +164,11 @@ Deno.test("encryption: matches Rust - vector 3", async () => {
 // Error Cases
 // ============================================================================
 
-Deno.test("encryption: DynamicTnid.parse rejects invalid TNID format", () => {
-  // With strong typing, invalid strings are caught at parse time
+Deno.test("encryption: DynamicTnid.parse rejects invalid format", () => {
+  // parse() auto-detects format: no dot = tries UUID, fails on format
   assertThrows(
     () => DynamicTnid.parse("invalid"),
     Error,
-    "missing '.' separator",
+    "Invalid UUID",
   );
 });

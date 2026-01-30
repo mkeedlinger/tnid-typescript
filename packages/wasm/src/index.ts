@@ -174,6 +174,15 @@ export function Tnid<Name extends string>(
     },
 
     parse(s: string): TnidValue<Name> {
+      // Detect format: TNID strings contain '.', UUID strings contain '-' or are 32 hex chars
+      if (s.includes(".")) {
+        return this.parseTnidString(s);
+      } else {
+        return this.parseUuidString(s);
+      }
+    },
+
+    parseTnidString(s: string): TnidValue<Name> {
       ensureInitialized();
       const parsed = wasmParse(s);
       const parsedName = wasmGetName(parsed);

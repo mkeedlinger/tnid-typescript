@@ -78,21 +78,32 @@ Deno.test("tnid: parse rejects wrong name", () => {
   );
 });
 
-Deno.test("tnid: parse rejects missing separator", () => {
+Deno.test("tnid: parse rejects wrong length", () => {
+  const UserId = Tnid("user");
+
+  // Wrong length - rejected before format detection
+  assertThrows(
+    () => UserId.parse("usersomedata"),
+    Error,
+    "expected TNID string (19-22 chars) or UUID (36 chars)"
+  );
+});
+
+Deno.test("tnid: parseTnidString rejects missing separator", () => {
   const UserId = Tnid("user");
 
   assertThrows(
-    () => UserId.parse("usersomedata"),
+    () => UserId.parseTnidString("usersomedata"),
     Error,
     "missing '.' separator"
   );
 });
 
-Deno.test("tnid: parse rejects invalid data length", () => {
+Deno.test("tnid: parseTnidString rejects invalid data length", () => {
   const UserId = Tnid("user");
 
   assertThrows(
-    () => UserId.parse("user.tooshort"),
+    () => UserId.parseTnidString("user.tooshort"),
     Error,
     "Invalid data length"
   );

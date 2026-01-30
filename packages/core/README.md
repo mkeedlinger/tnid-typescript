@@ -52,6 +52,19 @@ const parsed: UserId = UserId.parse("user.Br2flcNDfF6LYICnT");
 // Convert to/from UUID format
 const uuid: string = UserId.toUuidString(id); // "d6157329-4640-8e30-..."
 const fromUuid: UserId = UserId.parseUuidString(uuid);
+
+// Works great with Zod
+import { z } from "zod";
+const UserSchema = z.object({
+  id: z.string().transform(UserId.parse),
+  name: z.string(),
+});
+interface User extends z.infer<typeof UserSchema> {} // { id: UserId; name: string }
+
+const user: User = UserSchema.parse({
+  id: "user.Br2flcNDfF6LYICnT",
+  name: "Alice",
+});
 ```
 
 ## Features
@@ -87,8 +100,8 @@ id === otherUserId; // true/false
 import {
   Case, // "lower" | "upper"
   DynamicTnid, // Runtime TNID operations (type + namespace)
-  Tnid, // NamedTnid creator function
   NamedTnid, // NamedTnid interface
+  Tnid, // NamedTnid creator function
   TnidType, // Type helper to extract ID type
   // Types only:
   TnidValue, // Branded string type
@@ -100,8 +113,8 @@ import {
 
 ### `Tnid(name)`
 
-Creates a `NamedTnid` for a specific name. The name is validated at
-**compile time**.
+Creates a `NamedTnid` for a specific name. The name is validated at **compile
+time**.
 
 ```typescript
 const UserId = Tnid("user");
@@ -138,27 +151,27 @@ Tnid(""); // empty not allowed
 const UserId = Tnid("user");
 type UserId = TnidType<typeof UserId>;
 
-UserId.new_v0();                        // time-ordered ID
-UserId.new_v1();                        // high-entropy random ID
-UserId.v0_from_parts(1234567890n, 0n);  // V0 with explicit timestamp/random
-UserId.v1_from_parts(0n);               // V1 with explicit random bits
+UserId.new_v0(); // time-ordered ID
+UserId.new_v1(); // high-entropy random ID
+UserId.v0_from_parts(1234567890n, 0n); // V0 with explicit timestamp/random
+UserId.v1_from_parts(0n); // V1 with explicit random bits
 ```
 
 #### Parsing
 
 ```typescript
-UserId.parse("user.Br2flcNDfF6LYICnT");              // parse TNID string
-UserId.parseUuidString("d6157329-4640-8e30-...");    // parse UUID hex string
+UserId.parse("user.Br2flcNDfF6LYICnT"); // parse TNID string
+UserId.parseUuidString("d6157329-4640-8e30-..."); // parse UUID hex string
 ```
 
 #### Inspection and Conversion
 
 ```typescript
-UserId.name;                      // "user" - the TNID name
-UserId.variant(id);               // "v0" or "v1" - get the variant
-UserId.toUuidString(id);          // "d6157329-4640-8e30-..." - convert to UUID
+UserId.name; // "user" - the TNID name
+UserId.variant(id); // "v0" or "v1" - get the variant
+UserId.toUuidString(id); // "d6157329-4640-8e30-..." - convert to UUID
 UserId.toUuidString(id, "upper"); // "D6157329-4640-8E30-..." - uppercase UUID
-UserId.nameHex();                 // "d6157" - name as 5-char hex
+UserId.nameHex(); // "d6157" - name as 5-char hex
 ```
 
 ### `TnidType<T>`
@@ -188,23 +201,27 @@ function logAnyId(id: DynamicTnid) {
 }
 
 // Generation with runtime names
-DynamicTnid.new_v0("user");           // time-ordered (alias: new_time_ordered)
-DynamicTnid.new_v1("user");           // high-entropy (alias: new_high_entropy)
+DynamicTnid.newV0("user"); // time-ordered (alias: newTimeOrdered)
+DynamicTnid.newV1("user"); // high-entropy (alias: newHighEntropy)
 
 // Generation with explicit values (useful for testing/migrations)
-DynamicTnid.new_v0_with_time("user", new Date("2024-01-15"));
-DynamicTnid.new_v0_with_parts("user", 1705312800000n, 123n);
-DynamicTnid.new_v1_with_random("user", 0x123456789abcdef0123456789n);
+DynamicTnid.newV0WithTime("user", new Date("2024-01-15"));
+DynamicTnid.newV0WithParts("user", 1705312800000n, 123n);
+DynamicTnid.newV1WithRandom("user", 0x123456789abcdef0123456789n);
 
-// Parsing any TNID
-DynamicTnid.parse("post.EUBcUw4T9x3KNOll-");
-DynamicTnid.parse_uuid_string("d6157329-4640-...");
+// Parsing (auto-detects format)
+DynamicTnid.parse("post.EUBcUw4T9x3KNOll-"); // TNID string
+DynamicTnid.parse("d6157329-4640-..."); // UUID string
+
+// Or use explicit parse methods
+DynamicTnid.parseTnidString("post.EUBcUw4T9x3KNOll-");
+DynamicTnid.parseUuidString("d6157329-4640-...");
 
 // Inspection
-DynamicTnid.getName(id);              // "user"
-DynamicTnid.getNameHex(id);           // "d6157"
-DynamicTnid.getVariant(id);           // "v0" or "v1"
-DynamicTnid.toUuidString(id);         // UUID hex string
+DynamicTnid.getName(id); // "user"
+DynamicTnid.getNameHex(id); // "d6157"
+DynamicTnid.getVariant(id); // "v0" or "v1"
+DynamicTnid.toUuidString(id); // UUID hex string
 ```
 
 ### `UuidLike`
@@ -212,10 +229,10 @@ DynamicTnid.toUuidString(id);         // UUID hex string
 For working with UUID hex strings that may or may not be valid TNIDs.
 
 ```typescript
-UuidLike.fromTnid(id);        // convert TNID to UUID string
-UuidLike.parse(s);            // parse any UUID (validates format only)
-UuidLike.toTnid(uuid);        // convert UUID to TNID (throws if invalid)
-UuidLike.toUpperCase(uuid);   // convert to uppercase
+UuidLike.fromTnid(id); // convert TNID to UUID string
+UuidLike.parse(s); // parse any UUID (validates format only)
+UuidLike.toTnid(uuid); // convert UUID to TNID (throws if invalid)
+UuidLike.toUpperCase(uuid); // convert to uppercase
 ```
 
 ## Variants

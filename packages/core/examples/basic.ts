@@ -27,7 +27,7 @@ console.log(`  UserId.parse():  ${UserId.parse(userId.toString())}`);
 // =============================================================================
 
 console.log("\nDynamicTnid:");
-console.log(`  .new_v0("item"): ${DynamicTnid.new_v0("item")}`);
+console.log(`  .newV0("item"): ${DynamicTnid.newV0("item")}`);
 
 // Parse any TNID string (name not known at compile time)
 const anyTnid: DynamicTnid = DynamicTnid.parse(postId.toString());

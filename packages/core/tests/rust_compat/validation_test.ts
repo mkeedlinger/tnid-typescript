@@ -25,7 +25,7 @@ Deno.test("rust compat: valid names pass validation", async () => {
     // TS validation: try to create, should not throw
     let tsValid = true;
     try {
-      DynamicTnid.new_v0(name);
+      DynamicTnid.newV0(name);
     } catch {
       tsValid = false;
     }
@@ -58,7 +58,7 @@ Deno.test("rust compat: invalid names fail validation", async () => {
     // TS validation: try to create, should throw
     let tsValid = true;
     try {
-      DynamicTnid.new_v0(name);
+      DynamicTnid.newV0(name);
     } catch {
       tsValid = false;
     }
@@ -75,7 +75,7 @@ Deno.test("rust compat: boundary validation cases", async () => {
   assertEquals(await cliValidateName(maxValid), true);
 
   let tsMaxValid = true;
-  try { DynamicTnid.new_v0(maxValid); } catch { tsMaxValid = false; }
+  try { DynamicTnid.newV0(maxValid); } catch { tsMaxValid = false; }
   assertEquals(tsMaxValid, true);
 
   // Exactly 5 chars (invalid - too long)
@@ -83,6 +83,6 @@ Deno.test("rust compat: boundary validation cases", async () => {
   assertEquals(await cliValidateName(tooLong), false);
 
   let tsTooLong = true;
-  try { DynamicTnid.new_v0(tooLong); } catch { tsTooLong = false; }
+  try { DynamicTnid.newV0(tooLong); } catch { tsTooLong = false; }
   assertEquals(tsTooLong, false);
 });
