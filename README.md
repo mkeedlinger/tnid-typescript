@@ -58,7 +58,7 @@ See the [package READMEs](./packages) for full API documentation.
 ### Prerequisites
 
 - [Deno](https://deno.land/) 1.0+
-- Rust CLI (`tnid-cli`) for compatibility tests
+- Rust CLI (`tnid`) for compatibility tests
 
 ### Commands
 
@@ -89,7 +89,7 @@ deno task build
 
 ## Rust Compatibility
 
-Packages include comprehensive tests against the Rust CLI (`tnid-cli`) to
+Packages include comprehensive tests against the Rust CLI (`tnid`) to
 ensure bit-for-bit compatibility between implementations.
 
 ## License

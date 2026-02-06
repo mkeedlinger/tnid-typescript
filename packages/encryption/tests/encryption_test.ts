@@ -160,7 +160,7 @@ Deno.test("encryption: decrypting V0 returns it unchanged", async () => {
 // Rust Compatibility Test Vectors
 // ============================================================================
 
-// These test vectors were generated using the Rust tnid-cli tool.
+// These test vectors were generated using the Rust tnid CLI tool.
 // If these fail, it means we're not bit-compatible with Rust.
 
 Deno.test("encryption: matches Rust - vector 1", async () => {

@@ -8,10 +8,7 @@
 import { assertEquals } from "@std/assert";
 import { DynamicTnid, Tnid } from "@tnid/core";
 import { decryptV1ToV0, EncryptionKey, encryptV0ToV1 } from "../src/index.ts";
-import * as path from "@std/path";
-
-// Resolve CLI path relative to this file
-const CLI_PATH = path.join(import.meta.dirname!, "../../../tnid-cli");
+const CLI_PATH = "tnid";
 
 async function runCli(args: string[]): Promise<string> {
   const command = new Deno.Command(CLI_PATH, {

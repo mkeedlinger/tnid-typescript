@@ -2,10 +2,7 @@
  * Test harness for comparing TypeScript implementation against the Rust CLI.
  */
 
-import * as path from "@std/path";
-
-// Resolve CLI path relative to this file (cli is at repo root)
-const CLI_PATH = path.join(import.meta.dirname!, "../../../../tnid-cli");
+const CLI_PATH = "tnid";
 
 async function runCli(args: string[]): Promise<string> {
   const command = new Deno.Command(CLI_PATH, {
