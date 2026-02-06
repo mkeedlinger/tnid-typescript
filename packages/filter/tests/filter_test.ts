@@ -1,8 +1,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
-import { Tnid } from "@tnid/core";
+import { DynamicTnid, Tnid } from "@tnid/core";
 import {
   Blocklist,
   FilterError,
+  newDynamicV0Filtered,
+  newDynamicV1Filtered,
   newV0Filtered,
   newV1Filtered,
 } from "../src/index.ts";
@@ -63,6 +65,22 @@ Deno.test("newV1Filtered: empty blocklist always succeeds", () => {
   const blocklist = new Blocklist([]);
   const id = newV1Filtered(UserId, blocklist);
   assertEquals(id.startsWith("user."), true);
+});
+
+// ============================================================================
+// Dynamic variants - variant correctness
+// ============================================================================
+
+Deno.test("newDynamicV0Filtered: produces v0 variant", () => {
+  const blocklist = new Blocklist(["TACO"]);
+  const id = newDynamicV0Filtered("user", blocklist);
+  assertEquals(DynamicTnid.getVariant(id), "v0");
+});
+
+Deno.test("newDynamicV1Filtered: produces v1 variant", () => {
+  const blocklist = new Blocklist(["TACO"]);
+  const id = newDynamicV1Filtered("user", blocklist);
+  assertEquals(DynamicTnid.getVariant(id), "v1");
 });
 
 // ============================================================================
