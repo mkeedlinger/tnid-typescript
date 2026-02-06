@@ -1,0 +1,11 @@
+{
+  "name": "@tnid/filter",
+  "exports": {
+    ".": "./src/index.ts",
+    "./encryption": "./src/filter_encryption.ts"
+  },
+  "imports": {
+    "@tnid/core": "../core/src/index.ts",
+    "@tnid/encryption": "../encryption/src/index.ts"
+  }
+}

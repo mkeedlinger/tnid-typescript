@@ -2,6 +2,7 @@
   "workspace": [
     "./packages/core",
     "./packages/encryption",
+    "./packages/filter",
     "./packages/wasm"
   ],
   "version": "0.0.9",
@@ -15,6 +16,7 @@
     "test": "deno test --allow-run packages/*/tests/",
     "test:core": "deno test --allow-run packages/core/tests/",
     "test:encryption": "deno test --allow-run packages/encryption/tests/",
+    "test:filter": "deno test --allow-run packages/filter/tests/",
     "example": "deno run packages/core/examples/basic.ts",
     "example:core": "deno run packages/core/examples/basic.ts",
     "example:encryption": "deno run packages/encryption/examples/basic.ts",

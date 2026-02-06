@@ -53,6 +53,19 @@ const packages: PackageConfig[] = [
     skipNpmInstall: true,
   },
   {
+    name: "@tnid/filter",
+    dir: "filter",
+    entryPoints: [
+      { name: ".", path: "./packages/filter/src/index.ts" },
+      { name: "./encryption", path: "./packages/filter/src/filter_encryption.ts" },
+    ],
+    description:
+      "Blocklist filtering for TNIDs - generate IDs that avoid specified substrings",
+    readme: "./packages/filter/README.md",
+    importMap: "./packages/filter/deno.json",
+    skipNpmInstall: true,
+  },
+  {
     name: "@tnid/wasm",
     dir: "wasm",
     entryPoints: "./packages/wasm/src/index.ts",
@@ -94,6 +107,13 @@ for (const pkg of packages) {
       [coreIndex]: { name: "@tnid/core", version: `^${VERSION}`, peerDependency: true },
       [coreUuid]: { name: "@tnid/core", version: `^${VERSION}`, subPath: "uuid", peerDependency: true },
     };
+  } else if (pkg.name === "@tnid/filter") {
+    const coreIndex = toFileUrl(Deno.realPathSync("./packages/core/src/index.ts")).href;
+    const encryptionIndex = toFileUrl(Deno.realPathSync("./packages/encryption/src/index.ts")).href;
+    mappings = {
+      [coreIndex]: { name: "@tnid/core", version: `^${VERSION}`, peerDependency: true },
+      [encryptionIndex]: { name: "@tnid/encryption", version: `^${VERSION}`, peerDependency: true },
+    };
   } else if (pkg.name === "@tnid/wasm") {
     // wasm only imports from @tnid/core main export, not uuid
     const coreIndex = toFileUrl(Deno.realPathSync("./packages/core/src/index.ts")).href;
@@ -102,8 +122,8 @@ for (const pkg of packages) {
     };
   }
 
-  // Create node_modules/@tnid/core symlink for packages that depend on core
-  if (pkg.name === "@tnid/encryption" || pkg.name === "@tnid/wasm") {
+  // Create node_modules/@tnid symlinks for packages that depend on core/encryption
+  if (pkg.name === "@tnid/encryption" || pkg.name === "@tnid/wasm" || pkg.name === "@tnid/filter") {
     const nodeModulesPath = `./npm/${pkg.dir}/node_modules/@tnid`;
     await Deno.mkdir(nodeModulesPath, { recursive: true });
     try {
@@ -112,6 +132,15 @@ for (const pkg of packages) {
     const coreBuildPath = Deno.realPathSync("./npm/core");
     await Deno.symlink(coreBuildPath, `${nodeModulesPath}/core`);
     console.log(`  Linked @tnid/core from ${coreBuildPath}`);
+  }
+  if (pkg.name === "@tnid/filter") {
+    const nodeModulesPath = `./npm/${pkg.dir}/node_modules/@tnid`;
+    try {
+      await Deno.remove(`${nodeModulesPath}/encryption`, { recursive: true });
+    } catch { /* ignore if doesn't exist */ }
+    const encryptionBuildPath = Deno.realPathSync("./npm/encryption");
+    await Deno.symlink(encryptionBuildPath, `${nodeModulesPath}/encryption`);
+    console.log(`  Linked @tnid/encryption from ${encryptionBuildPath}`);
   }
 
   await build({
