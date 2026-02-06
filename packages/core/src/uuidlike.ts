@@ -30,12 +30,10 @@ export interface UuidLikeNamespace {
 
 /** Wrapper for UUID hex strings that may or may not be valid TNIDs. */
 export const UuidLike: UuidLikeNamespace = {
-  /** Create from a TNID (always valid). */
   fromTnid(id: DynamicTnid): UuidLike {
     return toUuidStringImpl(id, false) as UuidLike;
   },
 
-  /** Parse UUID hex string (format validation only, not TNID validation). */
   parse(s: string): UuidLike {
     // Validate format only
     if (!UUID_REGEX.test(s)) {
@@ -44,7 +42,6 @@ export const UuidLike: UuidLikeNamespace = {
     return s.toLowerCase() as UuidLike;
   },
 
-  /** Try to convert to DynamicTnid (validates TNID structure). */
   toTnid(uuid: UuidLike): DynamicTnid {
     const value = parseUuidStringToValue(uuid);
     if (!validateUuidBits(value)) {
@@ -58,7 +55,6 @@ export const UuidLike: UuidLikeNamespace = {
     return valueToTnidString(value) as DynamicTnid;
   },
 
-  /** Format as uppercase UUID hex string. */
   toUpperCase(uuid: UuidLike): UuidLike {
     return (uuid as string).toUpperCase() as UuidLike;
   },

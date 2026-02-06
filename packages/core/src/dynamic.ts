@@ -151,7 +151,6 @@ export interface DynamicTnidNamespace {
 
 /** Static methods for working with any TNID regardless of name. */
 export const DynamicTnid: DynamicTnidNamespace = {
-  /** Generate a new time-sortable TNID (variant 0) with runtime name validation. */
   newV0(name: string): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
@@ -164,12 +163,10 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Alias for newV0. */
   newTimeOrdered(name: string): DynamicTnid {
     return DynamicTnid.newV0(name);
   },
 
-  /** Generate a new time-sortable TNID with a specific timestamp. */
   newV0WithTime(name: string, time: Date): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
@@ -183,7 +180,6 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Generate a new time-sortable TNID with explicit timestamp and random components. */
   newV0WithParts(
     name: string,
     epochMillis: bigint,
@@ -200,7 +196,6 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Generate a new high-entropy TNID (variant 1) with runtime name validation. */
   newV1(name: string): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
@@ -213,12 +208,10 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Alias for newV1. */
   newHighEntropy(name: string): DynamicTnid {
     return DynamicTnid.newV1(name);
   },
 
-  /** Generate a new high-entropy TNID with explicit random bits. */
   newV1WithRandom(name: string, randomBits: bigint): DynamicTnid {
     if (!isValidNameRuntime(name)) {
       throw new Error(
@@ -231,7 +224,6 @@ export const DynamicTnid: DynamicTnidNamespace = {
     return `${name}.${dataEncoded}` as DynamicTnid;
   },
 
-  /** Parse a TNID from either TNID string format or UUID hex format (auto-detected). */
   parse(s: string): DynamicTnid {
     // Detect format by length: TNID strings are 19-22 chars with '.', UUIDs are 36 chars
     if (s.length >= 19 && s.length <= 22 && s.includes(".")) {
@@ -245,32 +237,26 @@ export const DynamicTnid: DynamicTnidNamespace = {
     }
   },
 
-  /** Parse a TNID string (e.g., "user.Br2flcNDfF6LYICnT"). */
   parseTnidString(s: string): DynamicTnid {
     return parseDynamicTnidImpl(s);
   },
 
-  /** Parse a UUID hex string into a DynamicTnid (validates TNID structure). */
   parseUuidString(uuid: string): DynamicTnid {
     return parseDynamicUuidStringImpl(uuid);
   },
 
-  /** Get the name from a TNID. */
   getName(id: DynamicTnid): string {
     return getTnidNameImpl(id);
   },
 
-  /** Get the name encoded as a 5-character hex string. */
   getNameHex(id: DynamicTnid): string {
     return getNameHexImpl(id);
   },
 
-  /** Get the variant of a TNID. */
   getVariant(id: DynamicTnid): TnidVariant {
     return getTnidVariantImpl(id);
   },
 
-  /** Convert to UUID hex string format. */
   toUuidString(id: DynamicTnid, caseFormat: Case = "lower"): string {
     return toUuidStringImpl(id, caseFormat === "upper");
   },
