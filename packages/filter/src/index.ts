@@ -22,4 +22,10 @@
  */
 
 export { Blocklist, type FilterLimits } from "./blocklist.ts";
-export { FilterError, newV0Filtered, newV1Filtered } from "./filter.ts";
+export {
+  FilterError,
+  newDynamicV0Filtered,
+  newDynamicV1Filtered,
+  newV0Filtered,
+  newV1Filtered,
+} from "./filter.ts";

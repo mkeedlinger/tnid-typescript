@@ -5,7 +5,7 @@
  * in their data string representation.
  */
 
-import type { NamedTnid, TnidValue } from "@tnid/core";
+import { DynamicTnid, type NamedTnid, type TnidValue } from "@tnid/core";
 import type { Blocklist } from "./blocklist.ts";
 import {
   dataString,
@@ -96,6 +96,63 @@ export function newV1Filtered<Name extends string>(
   for (let i = 0; i < maxIterations; i++) {
     const random = randomBigInt(V1_RANDOM_BITS);
     const id = factory.v1_from_parts(random);
+    const data = dataString(id);
+
+    if (!blocklist.containsMatch(data)) {
+      return id;
+    }
+  }
+
+  throw new FilterError(maxIterations);
+}
+
+/**
+ * Generate a V0 DynamicTnid whose data string contains no blocklisted words.
+ *
+ * Like {@link newV0Filtered} but accepts a runtime name string.
+ *
+ * @throws {FilterError} If maximum iterations exceeded.
+ */
+export function newDynamicV0Filtered(
+  name: string,
+  blocklist: Blocklist,
+): DynamicTnid {
+  const maxIterations = blocklist.limits().maxV0Iterations;
+  let timestamp = blocklist.getStartingTimestamp();
+
+  for (let i = 0; i < maxIterations; i++) {
+    const random = randomBigInt(V0_RANDOM_BITS);
+    const id = DynamicTnid.newV0WithParts(name, timestamp, random);
+    const data = dataString(id);
+
+    const match = blocklist.findFirstMatch(data);
+    if (match === null) {
+      blocklist.recordSafeTimestamp(timestamp);
+      return id;
+    }
+
+    timestamp = handleV0Match(match, timestamp);
+  }
+
+  throw new FilterError(maxIterations);
+}
+
+/**
+ * Generate a V1 DynamicTnid whose data string contains no blocklisted words.
+ *
+ * Like {@link newV1Filtered} but accepts a runtime name string.
+ *
+ * @throws {FilterError} If maximum iterations exceeded.
+ */
+export function newDynamicV1Filtered(
+  name: string,
+  blocklist: Blocklist,
+): DynamicTnid {
+  const maxIterations = blocklist.limits().maxV1Iterations;
+
+  for (let i = 0; i < maxIterations; i++) {
+    const random = randomBigInt(V1_RANDOM_BITS);
+    const id = DynamicTnid.newV1WithRandom(name, random);
     const data = dataString(id);
 
     if (!blocklist.containsMatch(data)) {
