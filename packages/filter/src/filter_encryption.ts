@@ -23,37 +23,22 @@
 
 import type { NamedTnid, TnidValue } from "@tnid/core";
 import { type EncryptionKey, encryptV0ToV1 } from "@tnid/encryption";
-import { Blocklist } from "./blocklist.ts";
+import type { Blocklist } from "./blocklist.ts";
 import { FilterError } from "./filter.ts";
+import {
+  dataString,
+  getStartingTimestamp,
+  handleV0Match,
+  randomBigInt,
+  recordSafeTimestamp,
+  V0_RANDOM_BITS,
+} from "./internals.ts";
 
 // Re-export Blocklist and FilterError for convenience
-export { Blocklist, FilterError };
+export { Blocklist } from "./blocklist.ts";
+export { FilterError };
 
-const FIRST_CHAR_WITH_RANDOM = 7;
 const MAX_ENCRYPTION_ITERATIONS = 1_000;
-const V0_RANDOM_BITS = 57;
-
-let lastSafeTimestamp = 0n;
-
-function randomBigInt(bits: number): bigint {
-  const bytes = new Uint8Array(Math.ceil(bits / 8));
-  crypto.getRandomValues(bytes);
-  let result = 0n;
-  for (const b of bytes) result = (result << 8n) | BigInt(b);
-  return result & ((1n << BigInt(bits)) - 1n);
-}
-
-function dataString(tnid: string): string {
-  return tnid.substring(tnid.indexOf(".") + 1);
-}
-
-function matchTouchesRandomPortion(start: number, length: number): boolean {
-  return start + length > FIRST_CHAR_WITH_RANDOM;
-}
-
-function timestampBumpForChar(pos: number): bigint {
-  return 1n << BigInt(42 - 6 * pos);
-}
 
 /**
  * Generate a V0 TNID where both the V0 and its encrypted V1 form
@@ -82,10 +67,7 @@ export async function newV0FilteredForEncryption<Name extends string>(
   blocklist: Blocklist,
   key: EncryptionKey,
 ): Promise<TnidValue<Name>> {
-  const currentTime = BigInt(Date.now());
-  let timestamp = currentTime > lastSafeTimestamp
-    ? currentTime
-    : lastSafeTimestamp;
+  let timestamp = getStartingTimestamp();
 
   for (let i = 0; i < MAX_ENCRYPTION_ITERATIONS; i++) {
     const random = randomBigInt(V0_RANDOM_BITS);
@@ -95,10 +77,7 @@ export async function newV0FilteredForEncryption<Name extends string>(
     // Check V0 first
     const v0Match = blocklist.findFirstMatch(v0Data);
     if (v0Match !== null) {
-      if (!matchTouchesRandomPortion(v0Match.start, v0Match.length)) {
-        const rightmostChar = v0Match.start + v0Match.length - 1;
-        timestamp += timestampBumpForChar(rightmostChar);
-      }
+      timestamp = handleV0Match(v0Match, timestamp);
       continue;
     }
 
@@ -107,7 +86,7 @@ export async function newV0FilteredForEncryption<Name extends string>(
     const v1Data = dataString(v1);
 
     if (!blocklist.containsMatch(v1Data)) {
-      lastSafeTimestamp = timestamp;
+      recordSafeTimestamp(timestamp);
       return v0;
     }
     // V1 had a match - regenerate (loop continues with new random)

@@ -169,6 +169,6 @@ Deno.test("encryption: DynamicTnid.parse rejects invalid format", () => {
   assertThrows(
     () => DynamicTnid.parse("invalid"),
     Error,
-    "Invalid UUID",
+    "Invalid TNID",
   );
 });
