@@ -8,10 +8,10 @@ import type { DynamicTnid } from "./dynamic.ts";
 export type UuidLike = string & { __uuidlike: true };
 import { decodeName, isValidNameRuntime } from "./name_encoding.ts";
 import {
-  UUID_REGEX,
-  parseUuidStringToValue,
-  validateUuidBits,
   extractNameBitsFromValue,
+  parseUuidStringToValue,
+  UUID_REGEX,
+  validateUuidBits,
   valueToTnidString,
 } from "./uuid.ts";
 import { toUuidStringImpl } from "./dynamic.ts";

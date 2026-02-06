@@ -43,7 +43,10 @@ Deno.test("newV0FilteredForEncryption: empty blocklist always succeeds", async (
 });
 
 Deno.test("newV0FilteredForEncryption: throws FilterError with extremely restrictive blocklist", async () => {
-  const allChars = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split("");
+  const allChars =
+    "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split(
+      "",
+    );
   const blocklist = new Blocklist(allChars);
 
   await assertRejects(

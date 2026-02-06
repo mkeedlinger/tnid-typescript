@@ -28,7 +28,9 @@ export class Aes128 {
       this.keyPromise = keyOrPromise;
     } else {
       if (keyOrPromise.length !== 16) {
-        throw new Error(`AES-128 key must be 16 bytes, got ${keyOrPromise.length}`);
+        throw new Error(
+          `AES-128 key must be 16 bytes, got ${keyOrPromise.length}`,
+        );
       }
       this.keyPromise = crypto.subtle.importKey(
         "raw",

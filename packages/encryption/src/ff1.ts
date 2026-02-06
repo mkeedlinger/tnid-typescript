@@ -32,7 +32,11 @@ function numArrayToBigInt(arr: number[], radix: number): bigint {
  * Convert a bigint to a number array (base radix) with specified length.
  * Most significant digit first. Pads with zeros if needed.
  */
-function bigIntToNumArray(value: bigint, radix: number, length: number): number[] {
+function bigIntToNumArray(
+  value: bigint,
+  radix: number,
+  length: number,
+): number[] {
   const result: number[] = new Array(length).fill(0);
   const radixBig = BigInt(radix);
   let v = value;
@@ -178,7 +182,9 @@ export class FF1 {
     P[15] = t & 0xff;
 
     // 10 Feistel rounds
-    const rounds = encrypting ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] : [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+    const rounds = encrypting
+      ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+      : [9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
 
     for (const i of rounds) {
       // Determine m based on round parity

@@ -71,14 +71,18 @@ Deno.test("timestampBumpForChar: values match Rust implementation", () => {
   assertEquals(timestampBumpForChar(3), 1n << 24n); // 16777216
   assertEquals(timestampBumpForChar(4), 1n << 18n); // 262144
   assertEquals(timestampBumpForChar(5), 1n << 12n); // 4096
-  assertEquals(timestampBumpForChar(6), 1n << 6n);  // 64
+  assertEquals(timestampBumpForChar(6), 1n << 6n); // 64
 });
 
 Deno.test("timestampBumpForChar: lower positions have larger bumps", () => {
   for (let i = 0; i < 6; i++) {
     const higher = timestampBumpForChar(i);
     const lower = timestampBumpForChar(i + 1);
-    assertEquals(higher > lower, true, `pos ${i} should be larger than pos ${i + 1}`);
+    assertEquals(
+      higher > lower,
+      true,
+      `pos ${i} should be larger than pos ${i + 1}`,
+    );
     assertEquals(higher, lower * 64n, `each step should be 64x (2^6)`);
   }
 });

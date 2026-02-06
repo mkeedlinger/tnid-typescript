@@ -6,17 +6,19 @@
  */
 
 // Mask for the right-most Payload bits section (bits 0-59, 60 bits)
-export const RIGHT_SECRET_DATA_SECTION_MASK = 0x00000000_0000_0000_0fff_ffffffffffffn;
+export const RIGHT_SECRET_DATA_SECTION_MASK =
+  0x00000000_0000_0000_0fff_ffffffffffffn;
 
 // Mask for the middle Payload bits section (bits 64-75, 12 bits)
-export const MIDDLE_SECRET_DATA_SECTION_MASK = 0x00000000_0000_0fff_0000_000000000000n;
+export const MIDDLE_SECRET_DATA_SECTION_MASK =
+  0x00000000_0000_0fff_0000_000000000000n;
 
 // Mask for the left-most Payload bits section (bits 80-107, 28 bits)
-export const LEFT_SECRET_DATA_SECTION_MASK = 0x00000fff_ffff_0000_0000_000000000000n;
+export const LEFT_SECRET_DATA_SECTION_MASK =
+  0x00000fff_ffff_0000_0000_000000000000n;
 
 // Complete mask for all Payload bits (100 bits)
-export const COMPLETE_SECRET_DATA_MASK =
-  RIGHT_SECRET_DATA_SECTION_MASK |
+export const COMPLETE_SECRET_DATA_MASK = RIGHT_SECRET_DATA_SECTION_MASK |
   MIDDLE_SECRET_DATA_SECTION_MASK |
   LEFT_SECRET_DATA_SECTION_MASK;
 
@@ -39,11 +41,13 @@ export function extractSecretDataBits(id: bigint): bigint {
 
   // Middle section: shift right by 4 to compact
   const BETWEEN_MIDDLE_RIGHT = 4n;
-  extracted = extracted | ((id & MIDDLE_SECRET_DATA_SECTION_MASK) >> BETWEEN_MIDDLE_RIGHT);
+  extracted = extracted |
+    ((id & MIDDLE_SECRET_DATA_SECTION_MASK) >> BETWEEN_MIDDLE_RIGHT);
 
   // Left section: shift right by 8 to compact
   const BETWEEN_LEFT_MIDDLE = BETWEEN_MIDDLE_RIGHT + 4n;
-  extracted = extracted | ((id & LEFT_SECRET_DATA_SECTION_MASK) >> BETWEEN_LEFT_MIDDLE);
+  extracted = extracted |
+    ((id & LEFT_SECRET_DATA_SECTION_MASK) >> BETWEEN_LEFT_MIDDLE);
 
   return extracted;
 }

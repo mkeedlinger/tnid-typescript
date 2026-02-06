@@ -6,13 +6,13 @@ import type { Case, TnidValue, TnidVariant } from "./types.ts";
 
 /** A TNID that can hold any name. Use for generic functions. */
 export type DynamicTnid = TnidValue<string>;
-import { encodeName, decodeName, isValidNameRuntime } from "./name_encoding.ts";
-import { encodeData, decodeData, dataBitsToBytes } from "./data_encoding.ts";
+import { decodeName, encodeName, isValidNameRuntime } from "./name_encoding.ts";
+import { dataBitsToBytes, decodeData, encodeData } from "./data_encoding.ts";
 import { generateV0, generateV1 } from "./bits.ts";
 import {
+  extractNameBitsFromValue,
   parseUuidStringToValue,
   validateUuidBits,
-  extractNameBitsFromValue,
   valueToTnidString,
   valueToUuidString,
 } from "./uuid.ts";
@@ -126,7 +126,11 @@ export interface DynamicTnidNamespace {
   /** Generate a new time-sortable TNID with a specific timestamp. */
   newV0WithTime(name: string, time: Date): DynamicTnid;
   /** Generate a new time-sortable TNID with explicit timestamp and random components. */
-  newV0WithParts(name: string, epochMillis: bigint, random: bigint): DynamicTnid;
+  newV0WithParts(
+    name: string,
+    epochMillis: bigint,
+    random: bigint,
+  ): DynamicTnid;
   /** Generate a new high-entropy TNID (variant 1) with runtime name validation. */
   newV1(name: string): DynamicTnid;
   /** Alias for newV1. */
@@ -263,7 +267,4 @@ export const DynamicTnid: DynamicTnidNamespace = {
 };
 
 // Export helper functions for use by factory.ts
-export {
-  getTnidVariantImpl,
-  toUuidStringImpl,
-};
+export { getTnidVariantImpl, toUuidStringImpl };

@@ -93,7 +93,10 @@ export function decodeData(
 /**
  * Convert data bits back to a 16-byte array.
  */
-export function dataBitsToBytes(dataBits: bigint, nameBits: number): Uint8Array {
+export function dataBitsToBytes(
+  dataBits: bigint,
+  nameBits: number,
+): Uint8Array {
   // Reconstruct the full 128-bit value from 102 data bits
   // Data bits layout: payloadA(28) + payloadB(12) + tnid_var(2) + payloadC(60) = 102 bits
   //

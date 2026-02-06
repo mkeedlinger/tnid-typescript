@@ -7,14 +7,18 @@
 
 import { assertEquals } from "@std/assert";
 import { DynamicTnid, Tnid } from "@tnid/core";
-import { EncryptionKey, encryptV0ToV1, decryptV1ToV0 } from "../src/index.ts";
+import { decryptV1ToV0, EncryptionKey, encryptV0ToV1 } from "../src/index.ts";
 import * as path from "@std/path";
 
 // Resolve CLI path relative to this file
 const CLI_PATH = path.join(import.meta.dirname!, "../../../tnid-cli");
 
 async function runCli(args: string[]): Promise<string> {
-  const command = new Deno.Command(CLI_PATH, { args, stdout: "piped", stderr: "piped" });
+  const command = new Deno.Command(CLI_PATH, {
+    args,
+    stdout: "piped",
+    stderr: "piped",
+  });
   const { code, stdout, stderr } = await command.output();
   if (code !== 0) {
     throw new Error(`CLI failed: ${new TextDecoder().decode(stderr)}`);
@@ -54,9 +58,15 @@ Deno.test("rust compat: encrypt V0 matches Rust CLI", async () => {
   // Test various V0 TNIDs with different keys
   const testCases = [
     { tnid: User.v0_from_parts(1234567890n, 0n), keyHex: TEST_KEYS[0] },
-    { tnid: User.v0_from_parts(9999999999999n, 12345678901234567890n), keyHex: TEST_KEYS[1] },
+    {
+      tnid: User.v0_from_parts(9999999999999n, 12345678901234567890n),
+      keyHex: TEST_KEYS[1],
+    },
     { tnid: Post.v0_from_parts(0n, 0n), keyHex: TEST_KEYS[2] },
-    { tnid: User.v0_from_parts(8796093022207n, (1n << 57n) - 1n), keyHex: TEST_KEYS[3] },
+    {
+      tnid: User.v0_from_parts(8796093022207n, (1n << 57n) - 1n),
+      keyHex: TEST_KEYS[3],
+    },
   ];
 
   for (const { tnid, keyHex } of testCases) {
@@ -68,7 +78,7 @@ Deno.test("rust compat: encrypt V0 matches Rust CLI", async () => {
     assertEquals(
       tsEncrypted,
       rustEncrypted,
-      `Encryption mismatch for ${tnid} with key ${keyHex}\nTS:   ${tsEncrypted}\nRust: ${rustEncrypted}`
+      `Encryption mismatch for ${tnid} with key ${keyHex}\nTS:   ${tsEncrypted}\nRust: ${rustEncrypted}`,
     );
   }
 });
@@ -79,7 +89,10 @@ Deno.test("rust compat: decrypt V1 matches Rust CLI", async () => {
   // First encrypt some V0 TNIDs, then verify decryption matches
   const testCases = [
     { v0: User.v0_from_parts(1234567890n, 0n), keyHex: TEST_KEYS[0] },
-    { v0: User.v0_from_parts(5555555555555n, 9876543210n), keyHex: TEST_KEYS[1] },
+    {
+      v0: User.v0_from_parts(5555555555555n, 9876543210n),
+      keyHex: TEST_KEYS[1],
+    },
   ];
 
   for (const { v0, keyHex } of testCases) {
@@ -95,7 +108,7 @@ Deno.test("rust compat: decrypt V1 matches Rust CLI", async () => {
     assertEquals(
       tsDecrypted,
       rustDecrypted,
-      `Decryption mismatch for ${v1} with key ${keyHex}\nTS:   ${tsDecrypted}\nRust: ${rustDecrypted}`
+      `Decryption mismatch for ${v1} with key ${keyHex}\nTS:   ${tsDecrypted}\nRust: ${rustDecrypted}`,
     );
 
     // Both should recover original V0
@@ -128,7 +141,11 @@ Deno.test("rust compat: round-trip encrypt/decrypt matches Rust", async () => {
     // Decrypt with Rust
     const rustDecrypted = await cliDecrypt(rustV1, keyHex);
 
-    assertEquals(tsDecrypted, rustDecrypted, `Decrypt mismatch for name="${name}"`);
+    assertEquals(
+      tsDecrypted,
+      rustDecrypted,
+      `Decrypt mismatch for name="${name}"`,
+    );
     assertEquals(tsDecrypted, v0, `Round-trip failed for name="${name}"`);
   }
 });
@@ -190,7 +207,7 @@ Deno.test("rust compat: random V0 TNIDs encrypt identically", async () => {
     assertEquals(
       tsEncrypted,
       rustEncrypted,
-      `Random test #${i} failed: name="${name}" v0=${v0}`
+      `Random test #${i} failed: name="${name}" v0=${v0}`,
     );
   }
 });

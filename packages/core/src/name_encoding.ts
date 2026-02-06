@@ -77,7 +77,9 @@ export function decodeName(encoded: number): string {
       for (let j = i + 1; j < 4; j++) {
         const nextShift = (3 - j) * 5;
         if ((encoded >> nextShift) & 0x1f) {
-          throw new Error(`Invalid name encoding: non-null value after null terminator`);
+          throw new Error(
+            `Invalid name encoding: non-null value after null terminator`,
+          );
         }
       }
       break;

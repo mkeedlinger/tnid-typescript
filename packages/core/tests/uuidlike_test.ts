@@ -12,7 +12,8 @@ Deno.test("uuidlike: fromTnid produces valid UUID format", () => {
   const uuid = UuidLike.fromTnid(id);
 
   // Check UUID format: 8-4-4-4-12 hex chars (lowercase)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   assertEquals(uuidRegex.test(uuid), true);
 });
 
@@ -21,7 +22,8 @@ Deno.test("uuidlike: toUpperCase produces uppercase UUID", () => {
   const id = UserId.new_v0();
 
   const uuidUpper = UuidLike.toUpperCase(UuidLike.fromTnid(id));
-  const uuidUpperRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/;
+  const uuidUpperRegex =
+    /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/;
   assertEquals(uuidUpperRegex.test(uuidUpper), true);
 });
 
@@ -35,7 +37,11 @@ Deno.test("uuidlike: parse validates UUID format only", () => {
   assertEquals(uuid, "550e8400-e29b-41d4-a716-446655440000");
 
   // Invalid UUID format
-  assertThrows(() => UuidLike.parse("not-a-uuid"), Error, "Invalid UUID format");
+  assertThrows(
+    () => UuidLike.parse("not-a-uuid"),
+    Error,
+    "Invalid UUID format",
+  );
 });
 
 // =============================================================================
@@ -65,7 +71,7 @@ Deno.test("uuidlike: toTnid rejects non-UUIDv8", () => {
   assertThrows(
     () => UuidLike.toTnid(uuid),
     Error,
-    "not a valid UUIDv8"
+    "not a valid UUIDv8",
   );
 });
 
@@ -103,7 +109,7 @@ Deno.test("uuidlike: parseUuidString rejects wrong name", () => {
   assertThrows(
     () => UserId.parseUuidString(postUuid),
     Error,
-    'name mismatch: expected "user", got "post"'
+    'name mismatch: expected "user", got "post"',
   );
 });
 
@@ -113,12 +119,12 @@ Deno.test("uuidlike: parseUuidString rejects invalid UUID format", () => {
   assertThrows(
     () => UserId.parseUuidString("not-a-uuid"),
     Error,
-    "Invalid UUID format"
+    "Invalid UUID format",
   );
 
   assertThrows(
     () => UserId.parseUuidString("12345678-1234-1234-1234-12345678901"), // too short
     Error,
-    "Invalid UUID format"
+    "Invalid UUID format",
   );
 });

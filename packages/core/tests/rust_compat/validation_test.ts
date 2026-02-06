@@ -10,13 +10,26 @@ import { cliValidateName } from "./cli_harness.ts";
 Deno.test("rust compat: valid names pass validation", async () => {
   const validNames = [
     // Single chars
-    "a", "z", "0", "4",
+    "a",
+    "z",
+    "0",
+    "4",
     // Two chars
-    "ab", "zz", "00", "a0",
+    "ab",
+    "zz",
+    "00",
+    "a0",
     // Three chars
-    "abc", "xyz", "123",
+    "abc",
+    "xyz",
+    "123",
     // Four chars (max)
-    "abcd", "user", "test", "zzzz", "0000", "a1b2",
+    "abcd",
+    "user",
+    "test",
+    "zzzz",
+    "0000",
+    "a1b2",
   ];
 
   for (const name of validNames) {
@@ -30,7 +43,11 @@ Deno.test("rust compat: valid names pass validation", async () => {
       tsValid = false;
     }
 
-    assertEquals(tsValid, rustValid, `Validation mismatch for valid name "${name}"`);
+    assertEquals(
+      tsValid,
+      rustValid,
+      `Validation mismatch for valid name "${name}"`,
+    );
     assertEquals(tsValid, true, `"${name}" should be valid`);
   }
 });
@@ -41,15 +58,35 @@ Deno.test("rust compat: invalid names fail validation", async () => {
     // Empty
     "",
     // Too long (5+ chars)
-    "users", "abcde", "testing",
+    "users",
+    "abcde",
+    "testing",
     // Invalid chars: uppercase
-    "A", "User", "TEST", "aBc",
+    "A",
+    "User",
+    "TEST",
+    "aBc",
     // Invalid chars: 5-9
-    "5", "6", "7", "8", "9", "a5", "56",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "a5",
+    "56",
     // Invalid chars: special
-    "-", "_", ".", " ", "a-b", "a_b", "a.b",
+    "-",
+    "_",
+    ".",
+    " ",
+    "a-b",
+    "a_b",
+    "a.b",
     // Invalid chars: unicode/symbols
-    "!", "@", "#", "$",
+    "!",
+    "@",
+    "#",
+    "$",
   ];
 
   for (const name of invalidNames) {
@@ -63,7 +100,11 @@ Deno.test("rust compat: invalid names fail validation", async () => {
       tsValid = false;
     }
 
-    assertEquals(tsValid, rustValid, `Validation mismatch for invalid name "${name}"`);
+    assertEquals(
+      tsValid,
+      rustValid,
+      `Validation mismatch for invalid name "${name}"`,
+    );
     assertEquals(tsValid, false, `"${name}" should be invalid`);
   }
 });
@@ -75,7 +116,11 @@ Deno.test("rust compat: boundary validation cases", async () => {
   assertEquals(await cliValidateName(maxValid), true);
 
   let tsMaxValid = true;
-  try { DynamicTnid.newV0(maxValid); } catch { tsMaxValid = false; }
+  try {
+    DynamicTnid.newV0(maxValid);
+  } catch {
+    tsMaxValid = false;
+  }
   assertEquals(tsMaxValid, true);
 
   // Exactly 5 chars (invalid - too long)
@@ -83,6 +128,10 @@ Deno.test("rust compat: boundary validation cases", async () => {
   assertEquals(await cliValidateName(tooLong), false);
 
   let tsTooLong = true;
-  try { DynamicTnid.newV0(tooLong); } catch { tsTooLong = false; }
+  try {
+    DynamicTnid.newV0(tooLong);
+  } catch {
+    tsTooLong = false;
+  }
   assertEquals(tsTooLong, false);
 });

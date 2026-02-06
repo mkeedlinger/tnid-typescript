@@ -1,9 +1,5 @@
-import {
-  assertEquals,
-  assertThrows,
-  assertNotEquals,
-} from "@std/assert";
-import { Tnid, DynamicTnid, UuidLike } from "../src/index.ts";
+import { assertEquals, assertNotEquals, assertThrows } from "@std/assert";
+import { DynamicTnid, Tnid, UuidLike } from "../src/index.ts";
 
 // =============================================================================
 // Generation Tests
@@ -74,7 +70,7 @@ Deno.test("tnid: parse rejects wrong name", () => {
   assertThrows(
     () => UserId.parse(postId),
     Error,
-    'name mismatch: expected "user", got "post"'
+    'name mismatch: expected "user", got "post"',
   );
 });
 
@@ -85,7 +81,7 @@ Deno.test("tnid: parse rejects wrong length", () => {
   assertThrows(
     () => UserId.parse("usersomedata"),
     Error,
-    "expected TNID string (19-22 chars) or UUID (36 chars)"
+    "expected TNID string (19-22 chars) or UUID (36 chars)",
   );
 });
 
@@ -95,7 +91,7 @@ Deno.test("tnid: parseTnidString rejects missing separator", () => {
   assertThrows(
     () => UserId.parseTnidString("usersomedata"),
     Error,
-    "missing '.' separator"
+    "missing '.' separator",
   );
 });
 
@@ -105,7 +101,7 @@ Deno.test("tnid: parseTnidString rejects invalid data length", () => {
   assertThrows(
     () => UserId.parseTnidString("user.tooshort"),
     Error,
-    "Invalid data length"
+    "Invalid data length",
   );
 });
 
@@ -115,7 +111,7 @@ Deno.test("tnid: parse rejects invalid data characters", () => {
   assertThrows(
     () => UserId.parse("user.!!!!!!!!!!!!!!!!!"),
     Error,
-    "Invalid data character"
+    "Invalid data character",
   );
 });
 
@@ -189,12 +185,14 @@ Deno.test("tnid: rejects UUID with non-null after null in name encoding", () => 
   value |= 0b10n << 62n; // UUID variant
 
   const hex = value.toString(16).padStart(32, "0");
-  const uuid = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  const uuid = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${
+    hex.slice(16, 20)
+  }-${hex.slice(20)}`;
 
   assertThrows(
     () => UuidLike.toTnid(UuidLike.parse(uuid)),
     Error,
-    "non-null value after null terminator"
+    "non-null value after null terminator",
   );
 });
 

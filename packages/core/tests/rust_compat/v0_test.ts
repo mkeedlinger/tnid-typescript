@@ -6,9 +6,9 @@ import { assertEquals } from "@std/assert";
 import { Tnid } from "../../src/index.ts";
 import {
   cliMakeV0,
+  randomName,
   randomTimestamp,
   randomV0Random,
-  randomName,
 } from "./cli_harness.ts";
 
 Deno.test("rust compat: V0 with zeros", async () => {
@@ -34,7 +34,11 @@ Deno.test("rust compat: V0 with specific values", async () => {
     const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
     const ts = tnid.v0_from_parts(timestamp, random);
     const rust = await cliMakeV0(name, timestamp, random);
-    assertEquals(ts, rust, `V0 mismatch for name="${name}" ts=${timestamp} r=${random}`);
+    assertEquals(
+      ts,
+      rust,
+      `V0 mismatch for name="${name}" ts=${timestamp} r=${random}`,
+    );
   }
 });
 
@@ -49,7 +53,11 @@ Deno.test("rust compat: V0 with random values", async () => {
     const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
     const ts = tnid.v0_from_parts(timestamp, random);
     const rust = await cliMakeV0(name, timestamp, random);
-    assertEquals(ts, rust, `V0 random mismatch #${i}: name="${name}" ts=${timestamp} r=${random}`);
+    assertEquals(
+      ts,
+      rust,
+      `V0 random mismatch #${i}: name="${name}" ts=${timestamp} r=${random}`,
+    );
   }
 });
 

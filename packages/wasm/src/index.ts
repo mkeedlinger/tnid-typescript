@@ -25,33 +25,33 @@
 
 // Re-export types from core (they're just type definitions, no runtime code)
 export type {
-  TnidValue,
-  TnidVariant,
   Case,
   NamedTnid,
   TnidType,
+  TnidValue,
+  TnidVariant,
   ValidateName,
 } from "@tnid/core";
 
 // Import the generated WASM bindings
 import initWasm, {
-  parse as wasmParse,
-  parse_uuid as wasmParseUuid,
+  decrypt_v1_to_v0 as wasmDecryptV1ToV0,
+  encrypt_v0_to_v1 as wasmEncryptV0ToV1,
+  get_name as wasmGetName,
+  get_variant as wasmGetVariant,
+  is_valid_name as wasmIsValidName,
   new_v0 as wasmNewV0,
   new_v1 as wasmNewV1,
+  parse as wasmParse,
+  parse_uuid as wasmParseUuid,
   to_uuid_string as wasmToUuidString,
-  get_variant as wasmGetVariant,
-  get_name as wasmGetName,
-  encrypt_v0_to_v1 as wasmEncryptV0ToV1,
-  decrypt_v1_to_v0 as wasmDecryptV1ToV0,
-  is_valid_name as wasmIsValidName,
 } from "../pkg/tnid_wasm.js";
 
 import type {
-  TnidValue,
-  TnidVariant,
   Case,
   NamedTnid,
+  TnidValue,
+  TnidVariant,
   ValidateName,
 } from "@tnid/core";
 

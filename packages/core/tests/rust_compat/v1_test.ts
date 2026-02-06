@@ -4,11 +4,7 @@
 
 import { assertEquals } from "@std/assert";
 import { Tnid } from "../../src/index.ts";
-import {
-  cliMakeV1,
-  randomV1Random,
-  randomName,
-} from "./cli_harness.ts";
+import { cliMakeV1, randomName, randomV1Random } from "./cli_harness.ts";
 
 Deno.test("rust compat: V1 with zeros", async () => {
   const names = ["user", "test", "a", "abcd"];
@@ -26,7 +22,7 @@ Deno.test("rust compat: V1 with specific values", async () => {
     ["user", (1n << 100n) - 1n],
     ["test", 0x123456789ABCDEFn],
     ["a", 1n],
-    ["abcd", (1n << 50n)],
+    ["abcd", 1n << 50n],
   ];
 
   for (const [name, random] of testCases) {
@@ -47,7 +43,11 @@ Deno.test("rust compat: V1 with random values", async () => {
     const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
     const ts = tnid.v1_from_parts(random);
     const rust = await cliMakeV1(name, random);
-    assertEquals(ts, rust, `V1 random mismatch #${i}: name="${name}" r=${random}`);
+    assertEquals(
+      ts,
+      rust,
+      `V1 random mismatch #${i}: name="${name}" r=${random}`,
+    );
   }
 });
 

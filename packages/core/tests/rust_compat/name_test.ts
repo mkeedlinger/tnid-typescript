@@ -4,7 +4,7 @@
 
 import { assertEquals } from "@std/assert";
 import { Tnid } from "../../src/index.ts";
-import { cliMakeV0, cliEncodeName } from "./cli_harness.ts";
+import { cliEncodeName, cliMakeV0 } from "./cli_harness.ts";
 
 // All 31 valid single characters: 0-4 and a-z
 const ALL_VALID_CHARS = "01234abcdefghijklmnopqrstuvwxyz";
@@ -38,10 +38,22 @@ Deno.test("rust compat: all 31 single-char names encode correctly", async () => 
 Deno.test("rust compat: two-char name combinations", async () => {
   // Test a sample of 2-char names
   const twoCharNames = [
-    "aa", "az", "za", "zz",
-    "00", "04", "40", "44",
-    "a0", "0a", "z4", "4z",
-    "ab", "xy", "12", "34",
+    "aa",
+    "az",
+    "za",
+    "zz",
+    "00",
+    "04",
+    "40",
+    "44",
+    "a0",
+    "0a",
+    "z4",
+    "4z",
+    "ab",
+    "xy",
+    "12",
+    "34",
   ];
 
   for (const name of twoCharNames) {
@@ -55,10 +67,20 @@ Deno.test("rust compat: two-char name combinations", async () => {
 
 Deno.test("rust compat: max length (4-char) names", async () => {
   const fourCharNames = [
-    "aaaa", "zzzz", "0000", "4444",
-    "abcd", "wxyz", "1234", "user",
-    "test", "post", "item", "data",
-    "a0z4", "0a4z",
+    "aaaa",
+    "zzzz",
+    "0000",
+    "4444",
+    "abcd",
+    "wxyz",
+    "1234",
+    "user",
+    "test",
+    "post",
+    "item",
+    "data",
+    "a0z4",
+    "0a4z",
   ];
 
   for (const name of fourCharNames) {

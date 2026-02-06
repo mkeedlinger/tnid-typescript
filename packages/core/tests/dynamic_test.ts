@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "@std/assert";
-import { Tnid, type TnidType, DynamicTnid } from "../src/index.ts";
+import { DynamicTnid, Tnid, type TnidType } from "../src/index.ts";
 
 // =============================================================================
 // DynamicTnid Type Compatibility
@@ -77,14 +77,14 @@ Deno.test("dynamic: parse rejects invalid strings", () => {
   assertThrows(
     () => DynamicTnid.parse("invalid"),
     Error,
-    "expected TNID string (19-22 chars) or UUID (36 chars)"
+    "expected TNID string (19-22 chars) or UUID (36 chars)",
   );
 
   // Valid TNID length (22 chars) with dot, but invalid name (uppercase)
   assertThrows(
     () => DynamicTnid.parse("UPPR.1234567890123456-"),
     Error,
-    "Invalid TNID name"
+    "Invalid TNID name",
   );
 });
 
@@ -92,7 +92,7 @@ Deno.test("dynamic: parseTnidString rejects missing separator", () => {
   assertThrows(
     () => DynamicTnid.parseTnidString("invalid"),
     Error,
-    "missing '.' separator"
+    "missing '.' separator",
   );
 });
 

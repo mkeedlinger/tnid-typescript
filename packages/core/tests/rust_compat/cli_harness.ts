@@ -8,7 +8,11 @@ import * as path from "@std/path";
 const CLI_PATH = path.join(import.meta.dirname!, "../../../../tnid-cli");
 
 async function runCli(args: string[]): Promise<string> {
-  const command = new Deno.Command(CLI_PATH, { args, stdout: "piped", stderr: "piped" });
+  const command = new Deno.Command(CLI_PATH, {
+    args,
+    stdout: "piped",
+    stderr: "piped",
+  });
   const { code, stdout, stderr } = await command.output();
   if (code !== 0) {
     throw new Error(`CLI failed: ${new TextDecoder().decode(stderr)}`);
@@ -17,7 +21,11 @@ async function runCli(args: string[]): Promise<string> {
 }
 
 /** Generate a V0 TNID using the Rust CLI */
-export function cliMakeV0(name: string, timestampMs: bigint, random: bigint): Promise<string> {
+export function cliMakeV0(
+  name: string,
+  timestampMs: bigint,
+  random: bigint,
+): Promise<string> {
   const tsHex = "0x" + timestampMs.toString(16);
   const rHex = "0x" + random.toString(16);
   return runCli(["internals", "make-v0", name, tsHex, rHex]);
@@ -75,8 +83,15 @@ export async function debugCompareV0(
   name: string,
   timestamp: bigint,
   random: bigint,
-  tsResult: string
-): Promise<{ rust: string; match: boolean; tsInspect?: Awaited<ReturnType<typeof cliInspect>>; rustInspect?: Awaited<ReturnType<typeof cliInspect>> }> {
+  tsResult: string,
+): Promise<
+  {
+    rust: string;
+    match: boolean;
+    tsInspect?: Awaited<ReturnType<typeof cliInspect>>;
+    rustInspect?: Awaited<ReturnType<typeof cliInspect>>;
+  }
+> {
   const rust = await cliMakeV0(name, timestamp, random);
   const match = rust === tsResult;
   if (!match) {
@@ -92,8 +107,15 @@ export async function debugCompareV0(
 export async function debugCompareV1(
   name: string,
   random: bigint,
-  tsResult: string
-): Promise<{ rust: string; match: boolean; tsInspect?: Awaited<ReturnType<typeof cliInspect>>; rustInspect?: Awaited<ReturnType<typeof cliInspect>> }> {
+  tsResult: string,
+): Promise<
+  {
+    rust: string;
+    match: boolean;
+    tsInspect?: Awaited<ReturnType<typeof cliInspect>>;
+    rustInspect?: Awaited<ReturnType<typeof cliInspect>>;
+  }
+> {
   const rust = await cliMakeV1(name, random);
   const match = rust === tsResult;
   if (!match) {
@@ -108,7 +130,8 @@ export async function debugCompareV1(
 
 /** Generate random test values */
 export function randomTimestamp(): bigint {
-  return BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)) & ((1n << 43n) - 1n);
+  return BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)) &
+    ((1n << 43n) - 1n);
 }
 
 export function randomV0Random(): bigint {

@@ -25,9 +25,9 @@
  */
 
 export {
+  decryptV1ToV0,
+  EncryptionError,
   EncryptionKey,
   EncryptionKeyError,
-  EncryptionError,
   encryptV0ToV1,
-  decryptV1ToV0,
 } from "./encryption.ts";

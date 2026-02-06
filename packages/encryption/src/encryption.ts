@@ -7,9 +7,9 @@
 
 import { DynamicTnid } from "@tnid/core";
 import {
+  extractVariantFromValue,
   parseUuidStringToValue,
   valueToTnidString,
-  extractVariantFromValue,
 } from "@tnid/core/uuid";
 
 import { Aes128 } from "./aes.ts";
@@ -165,7 +165,10 @@ async function decryptPayload(payload: bigint, ff1: FF1): Promise<bigint> {
  * @returns The encrypted V1 TNID (same type as input)
  * @throws EncryptionError if the TNID is not V0 or is invalid
  */
-export async function encryptV0ToV1<T extends DynamicTnid>(tnid: T, key: EncryptionKey): Promise<T> {
+export async function encryptV0ToV1<T extends DynamicTnid>(
+  tnid: T,
+  key: EncryptionKey,
+): Promise<T> {
   const value = tnidToValue(tnid);
 
   const variant = extractVariantFromValue(value);
@@ -205,7 +208,10 @@ export async function encryptV0ToV1<T extends DynamicTnid>(tnid: T, key: Encrypt
  * @returns The decrypted V0 TNID (same type as input)
  * @throws EncryptionError if the TNID is not V1 or is invalid
  */
-export async function decryptV1ToV0<T extends DynamicTnid>(tnid: T, key: EncryptionKey): Promise<T> {
+export async function decryptV1ToV0<T extends DynamicTnid>(
+  tnid: T,
+  key: EncryptionKey,
+): Promise<T> {
   const value = tnidToValue(tnid);
 
   const variant = extractVariantFromValue(value);

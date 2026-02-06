@@ -16,7 +16,24 @@ import {
 // ============================================================================
 
 Deno.test("EncryptionKey: fromBytes works", () => {
-  const bytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+  const bytes = new Uint8Array([
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+  ]);
   const key = EncryptionKey.fromBytes(bytes);
   assertEquals(key.asBytes(), bytes);
 });
@@ -32,7 +49,24 @@ Deno.test("EncryptionKey: fromBytes rejects wrong length", () => {
 
 Deno.test("EncryptionKey: fromHex works", () => {
   const key = EncryptionKey.fromHex("0102030405060708090a0b0c0d0e0f10");
-  const expected = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+  const expected = new Uint8Array([
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+  ]);
   assertEquals(key.asBytes(), expected);
 });
 
@@ -97,7 +131,11 @@ Deno.test("encryption: different keys produce different results", async () => {
   const e1 = await encryptV0ToV1(v0, key1);
   const e2 = await encryptV0ToV1(v0, key2);
 
-  assertEquals(e1 !== e2, true, "Different keys should produce different ciphertexts");
+  assertEquals(
+    e1 !== e2,
+    true,
+    "Different keys should produce different ciphertexts",
+  );
 });
 
 Deno.test("encryption: encrypting V1 returns it unchanged", async () => {
@@ -134,7 +172,11 @@ Deno.test("encryption: matches Rust - vector 1", async () => {
   const expectedEncrypted = "user.S1PcM9daFtzp1lJM5";
 
   const encrypted = await encryptV0ToV1(v0, key);
-  assertEquals(encrypted, expectedEncrypted, "Should match Rust encrypted value");
+  assertEquals(
+    encrypted,
+    expectedEncrypted,
+    "Should match Rust encrypted value",
+  );
 
   const decrypted = await decryptV1ToV0(encrypted, key);
   assertEquals(decrypted, v0, "Should decrypt back to original");
@@ -149,7 +191,11 @@ Deno.test("encryption: matches Rust - vector 2", async () => {
   const expectedEncrypted = "post.X3Wxwp0wOy4OZp_rP";
 
   const encrypted = await encryptV0ToV1(v0, key);
-  assertEquals(encrypted, expectedEncrypted, "Should match Rust encrypted value");
+  assertEquals(
+    encrypted,
+    expectedEncrypted,
+    "Should match Rust encrypted value",
+  );
 
   const decrypted = await decryptV1ToV0(encrypted, key);
   assertEquals(decrypted, v0, "Should decrypt back to original");
@@ -164,7 +210,11 @@ Deno.test("encryption: matches Rust - vector 3", async () => {
   const expectedEncrypted = "a.qjrH3l_XfqYmAVUgO";
 
   const encrypted = await encryptV0ToV1(v0, key);
-  assertEquals(encrypted, expectedEncrypted, "Should match Rust encrypted value");
+  assertEquals(
+    encrypted,
+    expectedEncrypted,
+    "Should match Rust encrypted value",
+  );
 
   const decrypted = await decryptV1ToV0(encrypted, key);
   assertEquals(decrypted, v0, "Should decrypt back to original");

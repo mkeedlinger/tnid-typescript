@@ -3,13 +3,13 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { Tnid, DynamicTnid, UuidLike } from "../../src/index.ts";
+import { DynamicTnid, Tnid, UuidLike } from "../../src/index.ts";
 import {
   cliInspect,
+  randomName,
   randomTimestamp,
   randomV0Random,
   randomV1Random,
-  randomName,
 } from "./cli_harness.ts";
 
 // =============================================================================
@@ -26,7 +26,11 @@ Deno.test("rust compat: toUuidString matches Rust for V0", async () => {
     const tsUuid = DynamicTnid.toUuidString(id);
     const rustInspect = await cliInspect(id);
 
-    assertEquals(tsUuid, rustInspect.uuidString, `UUID mismatch for ${name} V0`);
+    assertEquals(
+      tsUuid,
+      rustInspect.uuidString,
+      `UUID mismatch for ${name} V0`,
+    );
   }
 });
 
@@ -40,7 +44,11 @@ Deno.test("rust compat: toUuidString matches Rust for V1", async () => {
     const tsUuid = DynamicTnid.toUuidString(id);
     const rustInspect = await cliInspect(id);
 
-    assertEquals(tsUuid, rustInspect.uuidString, `UUID mismatch for ${name} V1`);
+    assertEquals(
+      tsUuid,
+      rustInspect.uuidString,
+      `UUID mismatch for ${name} V1`,
+    );
   }
 });
 
@@ -72,7 +80,11 @@ Deno.test("rust compat: getVariant matches Rust for V0", async () => {
     const rustInspect = await cliInspect(id);
 
     // Rust returns "V0", TS returns "v0" - normalize to lowercase
-    assertEquals(tsVariant, rustInspect.variant.toLowerCase(), `Variant mismatch for ${id}`);
+    assertEquals(
+      tsVariant,
+      rustInspect.variant.toLowerCase(),
+      `Variant mismatch for ${id}`,
+    );
   }
 });
 
@@ -88,7 +100,11 @@ Deno.test("rust compat: getVariant matches Rust for V1", async () => {
     const rustInspect = await cliInspect(id);
 
     // Rust returns "V1", TS returns "v1" - normalize to lowercase
-    assertEquals(tsVariant, rustInspect.variant.toLowerCase(), `Variant mismatch for ${id}`);
+    assertEquals(
+      tsVariant,
+      rustInspect.variant.toLowerCase(),
+      `Variant mismatch for ${id}`,
+    );
   }
 });
 
@@ -97,7 +113,19 @@ Deno.test("rust compat: getVariant matches Rust for V1", async () => {
 // =============================================================================
 
 Deno.test("rust compat: getName matches Rust", async () => {
-  const names = ["user", "test", "a", "ab", "abc", "abcd", "0", "1234", "z", "zzzz", "a1b2"];
+  const names = [
+    "user",
+    "test",
+    "a",
+    "ab",
+    "abc",
+    "abcd",
+    "0",
+    "1234",
+    "z",
+    "zzzz",
+    "a1b2",
+  ];
 
   for (const name of names) {
     const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
@@ -115,7 +143,18 @@ Deno.test("rust compat: getName matches Rust", async () => {
 // =============================================================================
 
 Deno.test("rust compat: getNameHex matches Rust", async () => {
-  const names = ["user", "test", "a", "ab", "abc", "abcd", "0", "1234", "z", "zzzz"];
+  const names = [
+    "user",
+    "test",
+    "a",
+    "ab",
+    "abc",
+    "abcd",
+    "0",
+    "1234",
+    "z",
+    "zzzz",
+  ];
 
   for (const name of names) {
     const tnid = Tnid(name as Parameters<typeof Tnid>[0]);
@@ -124,7 +163,11 @@ Deno.test("rust compat: getNameHex matches Rust", async () => {
     const tsNameHex = DynamicTnid.getNameHex(id);
     const rustInspect = await cliInspect(id);
 
-    assertEquals(tsNameHex, rustInspect.nameHex, `NameHex mismatch for ${name}`);
+    assertEquals(
+      tsNameHex,
+      rustInspect.nameHex,
+      `NameHex mismatch for ${name}`,
+    );
   }
 });
 
@@ -138,7 +181,11 @@ Deno.test("rust compat: tnid.nameHex matches Rust", async () => {
     const tsNameHex = tnid.nameHex();
     const rustInspect = await cliInspect(id);
 
-    assertEquals(tsNameHex, rustInspect.nameHex, `nameHex mismatch for ${name}`);
+    assertEquals(
+      tsNameHex,
+      rustInspect.nameHex,
+      `nameHex mismatch for ${name}`,
+    );
   }
 });
 

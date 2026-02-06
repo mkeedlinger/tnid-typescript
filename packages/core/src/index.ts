@@ -4,11 +4,11 @@
 
 // Types from types.ts
 export type {
-  TnidValue,
-  TnidVariant,
   Case,
   NamedTnid,
   TnidType,
+  TnidValue,
+  TnidVariant,
   ValidateName,
 } from "./types.ts";
 

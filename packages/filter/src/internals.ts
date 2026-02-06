@@ -45,7 +45,10 @@ export function dataString(tnid: string): string {
  * If true, regenerating random bits may resolve the match.
  * If false, the match is entirely in the timestamp portion and requires bumping.
  */
-export function matchTouchesRandomPortion(start: number, length: number): boolean {
+export function matchTouchesRandomPortion(
+  start: number,
+  length: number,
+): boolean {
   return start + length > FIRST_CHAR_WITH_RANDOM;
 }
 

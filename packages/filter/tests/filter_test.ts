@@ -1,6 +1,11 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { Tnid } from "@tnid/core";
-import { Blocklist, FilterError, newV0Filtered, newV1Filtered } from "../src/index.ts";
+import {
+  Blocklist,
+  FilterError,
+  newV0Filtered,
+  newV1Filtered,
+} from "../src/index.ts";
 
 const UserId = Tnid("user");
 
@@ -84,7 +89,10 @@ Deno.test("FilterError: is instanceof Error", () => {
 Deno.test("newV1Filtered: throws FilterError with extremely restrictive blocklist", () => {
   // Block every single character in the TNID data alphabet.
   // Every possible data string must contain at least one of these.
-  const allChars = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split("");
+  const allChars =
+    "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split(
+      "",
+    );
   const blocklist = new Blocklist(allChars);
 
   assertThrows(
@@ -94,7 +102,10 @@ Deno.test("newV1Filtered: throws FilterError with extremely restrictive blocklis
 });
 
 Deno.test("newV0Filtered: throws FilterError with extremely restrictive blocklist", () => {
-  const allChars = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split("");
+  const allChars =
+    "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split(
+      "",
+    );
   const blocklist = new Blocklist(allChars);
 
   assertThrows(
