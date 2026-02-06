@@ -12,6 +12,7 @@ import {
   extractVariantFromValue,
 } from "@tnid/core/uuid";
 
+import { Aes128 } from "./aes.ts";
 import { FF1 } from "./ff1.ts";
 import {
   COMPLETE_SECRET_DATA_MASK,
@@ -49,9 +50,11 @@ const HEX_32_REGEX = /^[0-9a-fA-F]{32}$/;
  */
 export class EncryptionKey {
   private readonly bytes: Uint8Array;
+  private readonly cryptoKeyPromise: Promise<CryptoKey>;
 
   private constructor(bytes: Uint8Array) {
     this.bytes = bytes;
+    this.cryptoKeyPromise = Aes128.importKey(bytes);
   }
 
   /**
@@ -96,6 +99,11 @@ export class EncryptionKey {
   asBytes(): Uint8Array {
     return new Uint8Array(this.bytes);
   }
+
+  /** Create an FF1 cipher reusing the cached CryptoKey. */
+  createFF1(): FF1 {
+    return new FF1(new Aes128(this.cryptoKeyPromise), 16);
+  }
 }
 
 /**
@@ -116,16 +124,13 @@ function valueToTnid(value: bigint): DynamicTnid {
 /**
  * Encrypts the 100-bit Payload using FF1.
  */
-async function encryptPayload(payload: bigint, key: EncryptionKey): Promise<bigint> {
+async function encryptPayload(payload: bigint, ff1: FF1): Promise<bigint> {
   // Mask to 100 bits
   const mask = (1n << 100n) - 1n;
   const data = payload & mask;
 
   // Convert to hex digits
   const hexDigits = toHexDigits(data);
-
-  // Create FF1 cipher with radix 16
-  const ff1 = new FF1(key.asBytes(), 16);
 
   // Encrypt with empty tweak
   const encrypted = await ff1.encrypt(new Uint8Array(0), hexDigits);
@@ -137,16 +142,13 @@ async function encryptPayload(payload: bigint, key: EncryptionKey): Promise<bigi
 /**
  * Decrypts the 100-bit Payload using FF1.
  */
-async function decryptPayload(payload: bigint, key: EncryptionKey): Promise<bigint> {
+async function decryptPayload(payload: bigint, ff1: FF1): Promise<bigint> {
   // Mask to 100 bits
   const mask = (1n << 100n) - 1n;
   const data = payload & mask;
 
   // Convert to hex digits
   const hexDigits = toHexDigits(data);
-
-  // Create FF1 cipher with radix 16
-  const ff1 = new FF1(key.asBytes(), 16);
 
   // Decrypt with empty tweak
   const decrypted = await ff1.decrypt(new Uint8Array(0), hexDigits);
@@ -181,7 +183,7 @@ export async function encryptV0ToV1<T extends DynamicTnid>(tnid: T, key: Encrypt
   const secretData = extractSecretDataBits(value);
 
   // Encrypt the Payload
-  const encryptedData = await encryptPayload(secretData, key);
+  const encryptedData = await encryptPayload(secretData, key.createFF1());
 
   // Expand back to proper bit positions
   const expanded = expandSecretDataBits(encryptedData);
@@ -221,7 +223,7 @@ export async function decryptV1ToV0<T extends DynamicTnid>(tnid: T, key: Encrypt
   const encryptedData = extractSecretDataBits(value);
 
   // Decrypt the Payload
-  const decryptedData = await decryptPayload(encryptedData, key);
+  const decryptedData = await decryptPayload(encryptedData, key.createFF1());
 
   // Expand back to proper bit positions
   const expanded = expandSecretDataBits(decryptedData);

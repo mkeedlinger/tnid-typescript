@@ -23,12 +23,32 @@ const crypto = (globalThis as any).crypto as {
 export class Aes128 {
   private keyPromise: Promise<CryptoKey>;
 
-  constructor(keyBytes: Uint8Array) {
+  constructor(keyOrPromise: Uint8Array | Promise<CryptoKey>) {
+    if (keyOrPromise instanceof Promise) {
+      this.keyPromise = keyOrPromise;
+    } else {
+      if (keyOrPromise.length !== 16) {
+        throw new Error(`AES-128 key must be 16 bytes, got ${keyOrPromise.length}`);
+      }
+      this.keyPromise = crypto.subtle.importKey(
+        "raw",
+        keyOrPromise,
+        { name: "AES-CBC" },
+        false,
+        ["encrypt"],
+      );
+    }
+  }
+
+  /**
+   * Import a raw key and return the CryptoKey promise.
+   * Useful for caching the import across multiple Aes128 instances.
+   */
+  static importKey(keyBytes: Uint8Array): Promise<CryptoKey> {
     if (keyBytes.length !== 16) {
       throw new Error(`AES-128 key must be 16 bytes, got ${keyBytes.length}`);
     }
-    // Import key once and cache the promise
-    this.keyPromise = crypto.subtle.importKey(
+    return crypto.subtle.importKey(
       "raw",
       keyBytes,
       { name: "AES-CBC" },

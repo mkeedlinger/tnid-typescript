@@ -96,14 +96,14 @@ export class FF1 {
   /**
    * Create an FF1 cipher with the given key and radix.
    *
-   * @param key 16-byte AES key
+   * @param key 16-byte AES key or pre-constructed Aes128 instance
    * @param radix Base of the numeral system (2-65536)
    */
-  constructor(key: Uint8Array, radix: number) {
+  constructor(key: Uint8Array | Aes128, radix: number) {
     if (radix < 2 || radix > 65536) {
       throw new Error(`Radix must be in range [2, 65536], got ${radix}`);
     }
-    this.aes = new Aes128(key);
+    this.aes = key instanceof Aes128 ? key : new Aes128(key);
     this.radix = radix;
   }
 
