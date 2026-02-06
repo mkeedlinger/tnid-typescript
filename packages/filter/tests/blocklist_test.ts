@@ -93,3 +93,43 @@ Deno.test("Blocklist: rejects patterns with invalid characters", () => {
     );
   }
 });
+
+// ============================================================================
+// Edge Cases
+// ============================================================================
+
+Deno.test("Blocklist: findFirstMatch at end of string", () => {
+  const blocklist = new Blocklist(["XYZ"]);
+  const match = blocklist.findFirstMatch("abcXYZ");
+  assertEquals(match, { start: 3, length: 3 });
+});
+
+Deno.test("Blocklist: single-character pattern", () => {
+  const blocklist = new Blocklist(["X"]);
+  assertEquals(blocklist.containsMatch("aXb"), true);
+  assertEquals(blocklist.containsMatch("axb"), true); // case-insensitive
+  assertEquals(blocklist.containsMatch("abc"), false);
+  const match = blocklist.findFirstMatch("abXcd");
+  assertEquals(match, { start: 2, length: 1 });
+});
+
+Deno.test("Blocklist: overlapping patterns", () => {
+  const blocklist = new Blocklist(["ABC", "BCD"]);
+  // "ABCD" contains both "ABC" and "BCD" — should find first match
+  const match = blocklist.findFirstMatch("ABCD");
+  assertEquals(match !== null, true);
+  // First match should start at 0 (ABC) or 1 (BCD) depending on regex engine
+  assertEquals(match!.start === 0 || match!.start === 1, true);
+});
+
+Deno.test("Blocklist: all empty patterns creates empty blocklist", () => {
+  const blocklist = new Blocklist(["", "", ""]);
+  assertEquals(blocklist.containsMatch("anything"), false);
+  assertEquals(blocklist.findFirstMatch("anything"), null);
+});
+
+Deno.test("Blocklist: full-string match", () => {
+  const blocklist = new Blocklist(["ABCDE"]);
+  const match = blocklist.findFirstMatch("ABCDE");
+  assertEquals(match, { start: 0, length: 5 });
+});

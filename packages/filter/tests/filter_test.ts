@@ -70,3 +70,35 @@ Deno.test("FilterError: has correct properties", () => {
   assertEquals(err.iterations, 100);
   assertEquals(err.message.includes("100"), true);
 });
+
+Deno.test("FilterError: is instanceof Error", () => {
+  const err = new FilterError(50);
+  assertEquals(err instanceof Error, true);
+  assertEquals(err instanceof FilterError, true);
+});
+
+// ============================================================================
+// FilterError actually thrown
+// ============================================================================
+
+Deno.test("newV1Filtered: throws FilterError with extremely restrictive blocklist", () => {
+  // Block every single character in the TNID data alphabet.
+  // Every possible data string must contain at least one of these.
+  const allChars = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split("");
+  const blocklist = new Blocklist(allChars);
+
+  assertThrows(
+    () => newV1Filtered(UserId, blocklist),
+    FilterError,
+  );
+});
+
+Deno.test("newV0Filtered: throws FilterError with extremely restrictive blocklist", () => {
+  const allChars = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split("");
+  const blocklist = new Blocklist(allChars);
+
+  assertThrows(
+    () => newV0Filtered(UserId, blocklist),
+    FilterError,
+  );
+});

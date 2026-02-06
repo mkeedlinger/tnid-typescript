@@ -3,8 +3,6 @@
  * @internal Not part of the public API.
  */
 
-import { Blocklist } from "./blocklist.ts";
-
 // V0 data string character layout:
 // Chars 0-6: pure timestamp bits
 // Char 7: 1 timestamp bit + 2 variant bits + 3 random bits

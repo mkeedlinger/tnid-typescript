@@ -1,7 +1,7 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { Tnid } from "@tnid/core";
 import { EncryptionKey, encryptV0ToV1 } from "@tnid/encryption";
-import { Blocklist } from "../src/index.ts";
+import { Blocklist, FilterError } from "../src/index.ts";
 import { newV0FilteredForEncryption } from "../src/filter_encryption.ts";
 
 const UserId = Tnid("user");
@@ -40,4 +40,14 @@ Deno.test("newV0FilteredForEncryption: empty blocklist always succeeds", async (
   const blocklist = new Blocklist([]);
   const id = await newV0FilteredForEncryption(UserId, blocklist, key);
   assertEquals(id.startsWith("user."), true);
+});
+
+Deno.test("newV0FilteredForEncryption: throws FilterError with extremely restrictive blocklist", async () => {
+  const allChars = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".split("");
+  const blocklist = new Blocklist(allChars);
+
+  await assertRejects(
+    () => newV0FilteredForEncryption(UserId, blocklist, key),
+    FilterError,
+  );
 });

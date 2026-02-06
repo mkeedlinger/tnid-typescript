@@ -11,6 +11,8 @@ This monorepo contains the reference TypeScript packages for working with TNIDs.
 | ----------------------------------------- | -------------------------------------------------------------- |
 | [@tnid/core](./packages/core)             | Core TNID functionality - generation, parsing, UUID conversion |
 | [@tnid/encryption](./packages/encryption) | Encrypt V0 TNIDs to hide timestamp information                 |
+| [@tnid/filter](./packages/filter)         | Generate TNIDs that avoid blocklisted substrings               |
+| [@tnid/wasm](./packages/wasm)             | Rust reference implementation via WebAssembly                  |
 
 ## Installation
 
@@ -18,8 +20,9 @@ This monorepo contains the reference TypeScript packages for working with TNIDs.
 # Core package (required)
 npm install @tnid/core
 
-# Encryption package (optional)
+# Optional extensions
 npm install @tnid/encryption
+npm install @tnid/filter
 ```
 
 ## Platform Support
@@ -66,6 +69,7 @@ deno task test
 # Run tests for a specific package
 deno task test:core
 deno task test:encryption
+deno task test:filter
 
 # Build npm packages
 deno task build
@@ -77,37 +81,15 @@ deno lint
 deno task check
 ```
 
-### Project Structure
-
-```
-tnid-typescript/
-├── packages/
-│   ├── core/           # @tnid/core
-│   │   ├── src/
-│   │   └── tests/
-│   └── encryption/     # @tnid/encryption
-│       ├── src/
-│       └── tests/
-├── scripts/
-│   └── build_npm.ts    # npm build script
-├── npm/                # Built npm packages (generated)
-└── deno.json           # Workspace config
-```
-
 ### Building for npm
 
 ```bash
-# Build all packages
 deno task build
-
-# Packages are output to npm/core and npm/encryption
-cd npm/core && npm publish
-cd npm/encryption && npm publish
 ```
 
 ## Rust Compatibility
 
-Both packages include comprehensive tests against the Rust CLI (`tnid-cli`) to
+Packages include comprehensive tests against the Rust CLI (`tnid-cli`) to
 ensure bit-for-bit compatibility between implementations.
 
 ## License

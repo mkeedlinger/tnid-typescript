@@ -133,6 +133,11 @@ Uses FF1 format-preserving encryption (NIST SP 800-38G) with AES-128, which allo
 
 The encryption functionality is not part of the TNID specification. Encrypted TNIDs are standard V1 TNIDs and remain fully compatible with any TNID implementation.
 
+## Related Packages
+
+- **@tnid/core** - Core TNID functionality (required peer dependency)
+- **@tnid/filter** - Generate TNIDs that avoid blocklisted substrings (includes `@tnid/filter/encryption` for combined use)
+
 ## License
 
 MIT
