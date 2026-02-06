@@ -60,6 +60,16 @@ Deno.test("EncryptionKey: fromHex rejects invalid hex", () => {
   }
 });
 
+Deno.test("EncryptionKey: fromHex rejects strings with 0x-like pairs", () => {
+  // "0x" parses as 0 via parseInt but is not valid hex
+  try {
+    EncryptionKey.fromHex("0x02030405060708090a0b0c0d0e0f10");
+    throw new Error("Should have thrown");
+  } catch (e) {
+    assertEquals(e instanceof EncryptionKeyError, true);
+  }
+});
+
 // ============================================================================
 // Round-trip Tests (self-consistency)
 // ============================================================================

@@ -42,6 +42,8 @@ export class EncryptionError extends Error {
   }
 }
 
+const HEX_32_REGEX = /^[0-9a-fA-F]{32}$/;
+
 /**
  * A 128-bit (16 byte) encryption key for TNID encryption.
  */
@@ -74,16 +76,15 @@ export class EncryptionKey {
       );
     }
 
+    if (!HEX_32_REGEX.test(hex)) {
+      throw new EncryptionKeyError(
+        `Encryption key hex string contains invalid characters`,
+      );
+    }
+
     const bytes = new Uint8Array(16);
     for (let i = 0; i < 16; i++) {
-      const hexByte = hex.slice(i * 2, i * 2 + 2);
-      const value = parseInt(hexByte, 16);
-      if (isNaN(value)) {
-        throw new EncryptionKeyError(
-          `Invalid hex character at position ${i * 2}`,
-        );
-      }
-      bytes[i] = value;
+      bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
     }
 
     return new EncryptionKey(bytes);
