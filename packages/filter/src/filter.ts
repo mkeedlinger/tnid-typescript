@@ -15,9 +15,6 @@ import {
   V1_RANDOM_BITS,
 } from "./internals.ts";
 
-const MAX_V0_ITERATIONS = 1_000;
-const MAX_V1_ITERATIONS = 100;
-
 /** Error thrown when filtered generation exceeds the iteration limit. */
 export class FilterError extends Error {
   readonly iterations: number;
@@ -53,9 +50,10 @@ export function newV0Filtered<Name extends string>(
   factory: NamedTnid<Name>,
   blocklist: Blocklist,
 ): TnidValue<Name> {
+  const maxIterations = blocklist.limits().maxV0Iterations;
   let timestamp = blocklist.getStartingTimestamp();
 
-  for (let i = 0; i < MAX_V0_ITERATIONS; i++) {
+  for (let i = 0; i < maxIterations; i++) {
     const random = randomBigInt(V0_RANDOM_BITS);
     const id = factory.v0_from_parts(timestamp, random);
     const data = dataString(id);
@@ -69,7 +67,7 @@ export function newV0Filtered<Name extends string>(
     timestamp = handleV0Match(match, timestamp);
   }
 
-  throw new FilterError(MAX_V0_ITERATIONS);
+  throw new FilterError(maxIterations);
 }
 
 /**
@@ -93,7 +91,9 @@ export function newV1Filtered<Name extends string>(
   factory: NamedTnid<Name>,
   blocklist: Blocklist,
 ): TnidValue<Name> {
-  for (let i = 0; i < MAX_V1_ITERATIONS; i++) {
+  const maxIterations = blocklist.limits().maxV1Iterations;
+
+  for (let i = 0; i < maxIterations; i++) {
     const random = randomBigInt(V1_RANDOM_BITS);
     const id = factory.v1_from_parts(random);
     const data = dataString(id);
@@ -103,5 +103,5 @@ export function newV1Filtered<Name extends string>(
     }
   }
 
-  throw new FilterError(MAX_V1_ITERATIONS);
+  throw new FilterError(maxIterations);
 }

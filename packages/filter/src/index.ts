@@ -21,5 +21,5 @@
  * @module
  */
 
-export { Blocklist } from "./blocklist.ts";
+export { Blocklist, type FilterLimits } from "./blocklist.ts";
 export { FilterError, newV0Filtered, newV1Filtered } from "./filter.ts";
