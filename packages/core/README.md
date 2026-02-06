@@ -303,6 +303,7 @@ await db.query("INSERT INTO users (id) VALUES ($1)", [uuid]);
 ## Related Packages
 
 - **@tnid/encryption** - Encrypt V0 TNIDs to V1 to hide timestamp information
+- **@tnid/filter** - Generate TNIDs that avoid specified substrings
 
 ## License
 
