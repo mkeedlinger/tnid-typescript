@@ -66,6 +66,9 @@ export function bytesToTnidString(bytes: Uint8Array, name: string): string {
 export function valueToTnidString(value: bigint): string {
   const nameBits = extractNameBitsFromValue(value);
   const name = decodeName(nameBits);
+  if (name === null) {
+    throw new Error("Invalid TNID: name bits are all zero");
+  }
   const bytes = valueToBytes(value);
   return bytesToTnidString(bytes, name);
 }

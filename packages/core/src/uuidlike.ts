@@ -49,7 +49,7 @@ export const UuidLike: UuidLikeNamespace = {
     }
     const nameBits = extractNameBitsFromValue(value);
     const name = decodeName(nameBits);
-    if (!isValidNameRuntime(name)) {
+    if (name === null || !isValidNameRuntime(name)) {
       throw new Error("Invalid TNID: invalid name encoding");
     }
     return valueToTnidString(value) as DynamicTnid;

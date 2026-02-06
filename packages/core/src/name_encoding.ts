@@ -72,7 +72,7 @@ export function encodeName(name: string): number {
 /**
  * Decode 20 bits back to a name string.
  */
-export function decodeName(encoded: number): string {
+export function decodeName(encoded: number): string | null {
   let result = "";
   for (let i = 0; i < 4; i++) {
     const shift = (3 - i) * 5;
@@ -95,7 +95,7 @@ export function decodeName(encoded: number): string {
     }
     result += char;
   }
-  return result;
+  return result.length === 0 ? null : result;
 }
 
 /**

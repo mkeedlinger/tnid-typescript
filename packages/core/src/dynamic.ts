@@ -121,7 +121,7 @@ function parseDynamicUuidStringImpl(uuid: string): DynamicTnid {
   const nameBits = extractNameBitsFromValue(value);
   const name = decodeName(nameBits);
 
-  if (!isValidNameRuntime(name)) {
+  if (name === null || !isValidNameRuntime(name)) {
     throw new Error(`Invalid TNID: invalid name encoding`);
   }
 

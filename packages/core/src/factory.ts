@@ -158,6 +158,13 @@ export function Tnid<const Name extends string>(
       const uuidNameBits = extractNameBitsFromValue(value);
       if (uuidNameBits !== nameBits) {
         const foundName = decodeName(uuidNameBits);
+        if (foundName === null) {
+          throw new Error(
+            `TNID name mismatch: expected "${name}", got invalid name bits 0x${
+              uuidNameBits.toString(16).padStart(5, "0")
+            }`,
+          );
+        }
         throw new Error(
           `TNID name mismatch: expected "${name}", got "${foundName}"`,
         );
