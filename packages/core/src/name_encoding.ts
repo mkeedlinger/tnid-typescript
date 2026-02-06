@@ -72,7 +72,16 @@ export function decodeName(encoded: number): string {
   for (let i = 0; i < 4; i++) {
     const shift = (3 - i) * 5;
     const value = (encoded >> shift) & 0x1f;
-    if (value === 0) break; // null terminator
+    if (value === 0) {
+      // Verify remaining slots are also null
+      for (let j = i + 1; j < 4; j++) {
+        const nextShift = (3 - j) * 5;
+        if ((encoded >> nextShift) & 0x1f) {
+          throw new Error(`Invalid name encoding: non-null value after null terminator`);
+        }
+      }
+      break;
+    }
     const char = NAME_VALUE_TO_CHAR[value];
     if (!char) {
       throw new Error(`Invalid encoded name value: ${value}`);

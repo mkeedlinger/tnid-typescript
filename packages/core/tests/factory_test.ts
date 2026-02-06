@@ -3,7 +3,7 @@ import {
   assertThrows,
   assertNotEquals,
 } from "@std/assert";
-import { Tnid, DynamicTnid } from "../src/index.ts";
+import { Tnid, DynamicTnid, UuidLike } from "../src/index.ts";
 
 // =============================================================================
 // Generation Tests
@@ -176,6 +176,26 @@ Deno.test("tnid: max length name works", () => {
   const id = Abcd.new_v0();
   assertEquals(id.startsWith("abcd."), true);
   assertEquals(Abcd.parse(id), id);
+});
+
+Deno.test("tnid: rejects UUID with non-null after null in name encoding", () => {
+  // Craft a UUID where name bits encode [a, 0, b, 0] (non-null after null terminator)
+  // 'a' = 6 (0b00110), null = 0 (0b00000), 'b' = 7 (0b00111), null = 0 (0b00000)
+  // name bits = 00110_00000_00111_00000 = 0x301C0 (but that has non-null after null)
+  // Place at bits 108-127 of a UUIDv8 value
+  const nameBits = (6 << 15) | (0 << 10) | (7 << 5) | 0; // [a, 0, b, 0]
+  let value = BigInt(nameBits) << 108n;
+  value |= 0x8n << 76n; // UUID version 8
+  value |= 0b10n << 62n; // UUID variant
+
+  const hex = value.toString(16).padStart(32, "0");
+  const uuid = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+
+  assertThrows(
+    () => UuidLike.toTnid(UuidLike.parse(uuid)),
+    Error,
+    "non-null value after null terminator"
+  );
 });
 
 // =============================================================================
