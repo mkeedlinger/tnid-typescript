@@ -27,6 +27,15 @@ export class Blocklist {
   private pattern: RegExp | null;
 
   /**
+   * Tracks the last known safe timestamp to avoid re-discovering bad windows.
+   *
+   * When a bad word appears in the timestamp portion, we have to bump the timestamp
+   * until we escape that window. This field ensures subsequent calls don't have to
+   * rediscover the same bad window — they start from the last known safe timestamp.
+   */
+  private lastSafeTimestamp = 0n;
+
+  /**
    * Creates a new blocklist from the given patterns.
    *
    * @throws {Error} If any pattern contains characters outside the TNID data alphabet.
@@ -62,5 +71,18 @@ export class Blocklist {
     const m = this.pattern.exec(text);
     if (m === null) return null;
     return { start: m.index, length: m[0].length };
+  }
+
+  /** Get a starting timestamp: max of current time and last known safe timestamp. */
+  getStartingTimestamp(): bigint {
+    const current = BigInt(Date.now());
+    return current > this.lastSafeTimestamp ? current : this.lastSafeTimestamp;
+  }
+
+  /** Record a safe timestamp so future calls can skip past known bad windows. */
+  recordSafeTimestamp(ts: bigint): void {
+    if (ts > this.lastSafeTimestamp) {
+      this.lastSafeTimestamp = ts;
+    }
   }
 }

@@ -27,10 +27,8 @@ import type { Blocklist } from "./blocklist.ts";
 import { FilterError } from "./filter.ts";
 import {
   dataString,
-  getStartingTimestamp,
   handleV0Match,
   randomBigInt,
-  recordSafeTimestamp,
   V0_RANDOM_BITS,
 } from "./internals.ts";
 
@@ -67,7 +65,7 @@ export async function newV0FilteredForEncryption<Name extends string>(
   blocklist: Blocklist,
   key: EncryptionKey,
 ): Promise<TnidValue<Name>> {
-  let timestamp = getStartingTimestamp();
+  let timestamp = blocklist.getStartingTimestamp();
 
   for (let i = 0; i < MAX_ENCRYPTION_ITERATIONS; i++) {
     const random = randomBigInt(V0_RANDOM_BITS);
@@ -86,7 +84,7 @@ export async function newV0FilteredForEncryption<Name extends string>(
     const v1Data = dataString(v1);
 
     if (!blocklist.containsMatch(v1Data)) {
-      recordSafeTimestamp(timestamp);
+      blocklist.recordSafeTimestamp(timestamp);
       return v0;
     }
     // V1 had a match - regenerate (loop continues with new random)

@@ -9,10 +9,8 @@ import type { NamedTnid, TnidValue } from "@tnid/core";
 import type { Blocklist } from "./blocklist.ts";
 import {
   dataString,
-  getStartingTimestamp,
   handleV0Match,
   randomBigInt,
-  recordSafeTimestamp,
   V0_RANDOM_BITS,
   V1_RANDOM_BITS,
 } from "./internals.ts";
@@ -55,7 +53,7 @@ export function newV0Filtered<Name extends string>(
   factory: NamedTnid<Name>,
   blocklist: Blocklist,
 ): TnidValue<Name> {
-  let timestamp = getStartingTimestamp();
+  let timestamp = blocklist.getStartingTimestamp();
 
   for (let i = 0; i < MAX_V0_ITERATIONS; i++) {
     const random = randomBigInt(V0_RANDOM_BITS);
@@ -64,7 +62,7 @@ export function newV0Filtered<Name extends string>(
 
     const match = blocklist.findFirstMatch(data);
     if (match === null) {
-      recordSafeTimestamp(timestamp);
+      blocklist.recordSafeTimestamp(timestamp);
       return id;
     }
 

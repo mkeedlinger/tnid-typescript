@@ -12,20 +12,6 @@ export const FIRST_CHAR_WITH_RANDOM = 7;
 export const V0_RANDOM_BITS = 57;
 export const V1_RANDOM_BITS = 100;
 
-/** Global last-known-safe timestamp to avoid re-discovering bad windows. */
-export let lastSafeTimestamp = 0n;
-
-export function recordSafeTimestamp(ts: bigint): void {
-  if (ts > lastSafeTimestamp) {
-    lastSafeTimestamp = ts;
-  }
-}
-
-export function getStartingTimestamp(): bigint {
-  const current = BigInt(Date.now());
-  return current > lastSafeTimestamp ? current : lastSafeTimestamp;
-}
-
 /** Generate a random bigint with the specified number of bits. */
 export function randomBigInt(bits: number): bigint {
   const bytes = new Uint8Array(Math.ceil(bits / 8));
