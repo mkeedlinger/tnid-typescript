@@ -4,7 +4,9 @@ Generate TNIDs that don't contain blocklisted substrings (e.g., profanity).
 
 ## Why Filter TNIDs?
 
-The 17-character data portion of a TNID string uses an alphabet that includes letters capable of forming recognizable words. For some applications, it may be undesirable for IDs to accidentally contain offensive terms.
+The 17-character data portion of a TNID string uses an alphabet that includes
+letters capable of forming recognizable words. For some applications, it may be
+undesirable for IDs to accidentally contain offensive terms.
 
 ## Installation
 
@@ -43,7 +45,8 @@ const v1: UserId = newV1Filtered(UserId, blocklist);
 
 ### With Encryption
 
-If you use the encryption extension to convert V0 to V1, you probably want both forms to be clean:
+If you use the encryption extension to convert V0 to V1, you probably want both
+forms to be clean:
 
 ```typescript
 import { Tnid } from "@tnid/core";
@@ -63,7 +66,8 @@ const v0 = await newV0FilteredForEncryption(UserId, blocklist, key);
 
 ### `Blocklist`
 
-A compiled blocklist for case-insensitive substring matching. Patterns must only contain characters from the TNID data alphabet (`-0-9A-Z_a-z`).
+A compiled blocklist for case-insensitive substring matching. Patterns must only
+contain characters from the TNID data alphabet (`-0-9A-Z_a-z`).
 
 ```typescript
 const blocklist = new Blocklist(["TACO", "FOO", "BAZZ"]);
@@ -72,6 +76,20 @@ blocklist.containsMatch("xyzTACOxyz"); // true
 blocklist.containsMatch("xyztacoxyz"); // true (case-insensitive)
 blocklist.containsMatch("xyzHELLOxyz"); // false
 ```
+
+An optional second argument configures iteration limits:
+
+```typescript
+import { Blocklist, type FilterLimits } from "@tnid/filter";
+
+const blocklist = new Blocklist(["TACO", "FOO"], {
+  maxV0Iterations: 500,
+  maxEncryptionIterations: 20_000,
+});
+```
+
+Defaults: `maxV0Iterations`: 1,000 | `maxV1Iterations`: 100 |
+`maxEncryptionIterations`: 10,000
 
 ### `newV0Filtered(factory, blocklist)`
 
@@ -87,14 +105,30 @@ Generate a random V1 TNID whose data string contains no blocklisted words.
 
 ### `newV0FilteredForEncryption(factory, blocklist, key)` (from `@tnid/filter/encryption`)
 
-Generate a V0 TNID where both the V0 and its encrypted V1 form contain no blocklisted words.
+Generate a V0 TNID where both the V0 and its encrypted V1 form contain no
+blocklisted words.
 
 - **Returns**: `Promise<TnidValue<Name>>`
 - **Throws**: `FilterError` if the iteration limit is exceeded
 
+### Dynamic (runtime name) variants
+
+If you don't have a compile-time `NamedTnid` factory, use the dynamic variants
+with a runtime name string:
+
+```typescript
+import { newDynamicV0Filtered, newDynamicV1Filtered } from "@tnid/filter";
+import { newDynamicV0FilteredForEncryption } from "@tnid/filter/encryption";
+
+const v0 = newDynamicV0Filtered("user", blocklist);
+const v1 = newDynamicV1Filtered("user", blocklist);
+const v0enc = await newDynamicV0FilteredForEncryption("user", blocklist, key);
+```
+
 ### `FilterError`
 
-Thrown when filtered generation exceeds the iteration limit, which typically means the blocklist is too restrictive.
+Thrown when filtered generation exceeds the iteration limit, which typically
+means the blocklist is too restrictive.
 
 ```typescript
 import { FilterError } from "@tnid/filter";
@@ -115,9 +149,11 @@ For V1, all bits are random, so the function simply regenerates until clean.
 For V0, the strategy depends on where the match appears in the data string:
 
 - **Random portion** (characters 7-16): Regenerate the random bits
-- **Timestamp portion** (characters 0-6): Advance the timestamp enough to change the matched characters, avoiding a potentially large "bad window"
+- **Timestamp portion** (characters 0-6): Advance the timestamp enough to change
+  the matched characters, avoiding a potentially large "bad window"
 
-A global last-known-safe timestamp avoids re-discovering the same bad windows across calls.
+Each `Blocklist` tracks a last-known-safe timestamp to avoid re-discovering the
+same bad windows across calls.
 
 ## License
 
