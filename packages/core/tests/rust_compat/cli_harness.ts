@@ -18,7 +18,9 @@ async function runCli(args: string[]): Promise<string> {
 
 /** Generate a V0 TNID using the Rust CLI */
 export function cliMakeV0(name: string, timestampMs: bigint, random: bigint): Promise<string> {
-  return runCli(["internals", "make-v0", name, timestampMs.toString(), random.toString()]);
+  const tsHex = "0x" + timestampMs.toString(16);
+  const rHex = "0x" + random.toString(16);
+  return runCli(["internals", "make-v0", name, tsHex, rHex]);
 }
 
 /** Generate a V1 TNID using the Rust CLI */
