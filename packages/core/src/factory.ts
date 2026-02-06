@@ -10,8 +10,19 @@ import type {
   ValidateName,
 } from "./types.ts";
 import type { DynamicTnid } from "./dynamic.ts";
-import { decodeName, encodeName, isValidNameRuntime } from "./name_encoding.ts";
-import { dataBitsToBytes, decodeData, encodeData } from "./data_encoding.ts";
+import {
+  decodeName,
+  encodeName,
+  isValidNameRuntime,
+  NAME_MAX_CHARS,
+  NAME_MIN_CHARS,
+} from "./name_encoding.ts";
+import {
+  DATA_CHAR_ENCODING_LEN,
+  dataBitsToBytes,
+  decodeData,
+  encodeData,
+} from "./data_encoding.ts";
 import { generateV0, generateV1 } from "./bits.ts";
 import {
   extractNameBitsFromValue,
@@ -20,6 +31,10 @@ import {
   valueToTnidString,
 } from "./uuid.ts";
 import { getTnidVariantImpl, toUuidStringImpl } from "./dynamic.ts";
+
+const MIN_TNID_LEN = NAME_MIN_CHARS + 1 + DATA_CHAR_ENCODING_LEN;
+const MAX_TNID_LEN = NAME_MAX_CHARS + 1 + DATA_CHAR_ENCODING_LEN;
+const UUID_LEN = 36;
 
 /**
  * Create a NamedTnid for the given name.
@@ -85,14 +100,17 @@ export function Tnid<const Name extends string>(
     },
 
     parse(s: string): TnidValue<Name> {
-      // Detect format by length: TNID strings are 19-22 chars with '.', UUIDs are 36 chars
-      if (s.length >= 19 && s.length <= 22 && s.includes(".")) {
+      if (
+        s.length >= MIN_TNID_LEN && s.length <= MAX_TNID_LEN && s.includes(".")
+      ) {
         return tnid.parseTnidString(s);
-      } else if (s.length === 36) {
+      } else if (s.length >= MIN_TNID_LEN && s.length <= MAX_TNID_LEN) {
+        throw new Error(`Invalid TNID string: missing '.' separator`);
+      } else if (s.length === UUID_LEN) {
         return tnid.parseUuidString(s);
       } else {
         throw new Error(
-          `Invalid TNID: expected TNID string (19-22 chars) or UUID (36 chars), got ${s.length} chars`,
+          `Invalid TNID: expected TNID string (${MIN_TNID_LEN}-${MAX_TNID_LEN} chars) or UUID (${UUID_LEN} chars), got ${s.length} chars`,
         );
       }
     },

@@ -14,6 +14,9 @@ for (let i = 0; i < DATA_ENCODING_ORDER.length; i++) {
   DATA_VALUE_TO_CHAR[i] = char;
 }
 
+/** Number of characters in the encoded data portion of a TNID string. */
+export const DATA_CHAR_ENCODING_LEN = 17;
+
 // The data portion is 102 bits encoded as 17 6-bit characters (102 = 17 * 6)
 //
 // 128-bit layout (MSB = bit 0):
@@ -70,8 +73,10 @@ export function encodeData(bytes: Uint8Array): string {
 export function decodeData(
   encoded: string,
 ): { dataBits: bigint; tnidVariant: number } {
-  if (encoded.length !== 17) {
-    throw new Error(`Invalid data length: expected 17, got ${encoded.length}`);
+  if (encoded.length !== DATA_CHAR_ENCODING_LEN) {
+    throw new Error(
+      `Invalid data length: expected ${DATA_CHAR_ENCODING_LEN}, got ${encoded.length}`,
+    );
   }
 
   let dataBits = 0n;

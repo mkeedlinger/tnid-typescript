@@ -3,6 +3,11 @@
 // Valid characters: 0-4, a-z (31 chars + null terminator = 32 = 2^5)
 // =============================================================================
 
+/** Minimum number of characters in a TNID name. */
+export const NAME_MIN_CHARS = 1;
+/** Maximum number of characters in a TNID name. */
+export const NAME_MAX_CHARS = 4;
+
 const NAME_CHAR_TO_VALUE: Record<string, number> = {
   "0": 1,
   "1": 2,
@@ -98,7 +103,9 @@ export function decodeName(encoded: number): string {
  * Must be 1-4 characters, each being 0-4 or a-z.
  */
 export function isValidNameRuntime(name: string): boolean {
-  if (name.length < 1 || name.length > 4) return false;
+  if (name.length < NAME_MIN_CHARS || name.length > NAME_MAX_CHARS) {
+    return false;
+  }
   for (const char of name) {
     if (!VALID_NAME_CHARS.has(char)) return false;
   }
